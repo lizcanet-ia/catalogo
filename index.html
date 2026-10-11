@@ -49,6 +49,7 @@
   </footer>
 
   <script>
+    // URL de tu Apps Script configurada como API JSON
     const API_URL = 'https://script.google.com/macros/s/AKfycbyIQqZPk3e_U17GjuO2LI99KS_wBWV0-91D_beFxaWOb0fWxLmS2gQEpBRwJaE5Y3E9aA/exec';
     let allProducts = [];
     let selectedBrand = 'TODAS';
@@ -60,7 +61,7 @@
           if (result.status === "success") {
             renderCatalog(result.data);
           } else {
-            handleError(new Error(result.message));
+            handleError(new Error(result.message || "Error al obtener datos"));
           }
         })
         .catch(function(error) { handleError(error); });
