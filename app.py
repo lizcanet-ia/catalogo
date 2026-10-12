@@ -127,8 +127,8 @@ def cargar_datos():
         return []
 
 # Encabezado principal
-st.title("🛍️ Nuestros productos elegidos para vos")
-st.markdown("Explorá nuestro catálogo y consultá al instante por WhatsApp.")
+st.title("🛍️ Nuestros productos")
+st.markdown("Explorá nuestro catálogo y comprá al instante por WhatsApp.")
 
 productos = cargar_datos()
 
