@@ -154,7 +154,7 @@ if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
     # -------------------------------------------------------------
-    # 1. SECCIÓN DE CATEGORÍAS (Parte Superior) con redirección al catálogo
+    # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
     # -------------------------------------------------------------
     st.markdown("### 🗂️ Categorías")
     cat_cols_top = st.columns(4)
@@ -181,7 +181,7 @@ else:
 
     st.markdown("---")
 
-    # Ancla invisible para que los botones de categoría y de "Ver en carrito" redirijan aquí
+    # Ancla invisible para redirección
     st.markdown('<div id="catalogo-productos"></div>', unsafe_allow_html=True)
 
     # Buscador y Filtro de marcas
@@ -192,25 +192,34 @@ else:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
         marca_seleccionada = st.selectbox("Marca", marcas)
 
-    # Lógica de filtrado
+    # -------------------------------------------------------------
+    # LÓGICA DE FILTRADO GLOBAL E INTELIGENTE
+    # -------------------------------------------------------------
     productos_filtrados = []
     keywords_hogar = ["tv", "ventilador", "aire acondicionado"]
     keywords_lavado = ["lavarropas", "aspiradora"]
     keywords_cocina = ["cocina", "pava", "microondas", "heladera"]
 
+    query = busqueda.lower().strip()
+
     for p in productos:
         nombre_prod = p.get("producto", "").lower()
-        match_categoria = True
-        cat = st.session_state.categoria_activa
-        if cat == "Hogar":
-            match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
-        elif cat == "Lavado":
-            match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
-        elif cat == "Cocina":
-            match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
+        
+        # SI EL USUARIO ESTÁ BUSCANDO POR TEXTO, IGNORAMOS LA CATEGORÍA (Búsqueda Global)
+        if query:
+            match_categoria = True
+        else:
+            match_categoria = True
+            cat = st.session_state.categoria_activa
+            if cat == "Hogar":
+                match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
+            elif cat == "Lavado":
+                match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
+            elif cat == "Cocina":
+                match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
 
         match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
-        query = busqueda.lower().strip()
+        
         match_query = (
             not query or
             query in nombre_prod or
@@ -222,9 +231,17 @@ else:
             productos_filtrados.append(p)
 
     if not productos_filtrados:
-        st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}'.")
+        if query:
+            # Si buscó un producto y no está en absoluto en el catálogo
+            st.warning(f"🔍 No encontramos **'{busqueda}'** en nuestro catálogo.")
+            wa_msg_ausente = f"Hola, estoy buscando '{busqueda}' y no lo encontré en el catálogo. ¿Me podrán confirmar si lo tienen disponible o se puede conseguir?"
+            wa_url_ausente = f"https://wa.me/5491165295937?text={urllib.parse.quote(wa_msg_ausente)}"
+            st.markdown(f'<a href="{wa_url_ausente}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:12px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold; margin-top:10px; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">💬 Consultar por WhatsApp si está disponible</a>', unsafe_allow_html=True)
+        else:
+            st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}'.")
     else:
-        st.write(f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)")
+        info_texto = f"Mostrando {len(productos_filtrados)} artículos" if query else f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)"
+        st.write(info_texto)
         
         cols = st.columns(2)
         for idx, prod in enumerate(productos_filtrados):
@@ -262,14 +279,12 @@ else:
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                     
-                    # Leyenda visual y enlace directo al carrito en el pie de página
                     if en_carrito:
                         st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
                         st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                     
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
-                    # Botón para agregar al carrito
                     if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                         if prod_id in st.session_state.carrito:
                             st.session_state.carrito[prod_id]["cantidad"] += 1
