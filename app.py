@@ -145,7 +145,7 @@ if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
 # Encabezado principal estilo E-commerce
-st.title("🛍️ Catálogo Exclusivo")
+st.title("Catálogo Exclusivo")
 st.markdown("Elegí tus productos, armá tu pedido y envianos la lista al instante por WhatsApp.")
 
 productos = cargar_datos()
@@ -156,7 +156,7 @@ else:
     # -------------------------------------------------------------
     # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
     # -------------------------------------------------------------
-    st.markdown("### 🗂️ Categorías")
+    st.markdown("### Categorías")
     cat_cols_top = st.columns(4)
     with cat_cols_top[0]:
         if st.button("🏠 Todas", key="cat_top_todas", use_container_width=True):
@@ -366,7 +366,7 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### 🗂️ Categorías (Explorar más)")
+    st.markdown("### Categorías (Explorar más)")
     cat_cols_bottom = st.columns(4)
     with cat_cols_bottom[0]:
         if st.button("🏠 Todas", key="cat_bot_todas", use_container_width=True):
