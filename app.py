@@ -106,6 +106,17 @@ st.markdown("""
         margin-top: 6px;
         margin-bottom: 10px;
     }
+    .added-badge {
+        color: #047857;
+        background-color: #d1fae5;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-bottom: 8px;
+        text-align: center;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -137,7 +148,7 @@ if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
     # -------------------------------------------------------------
-    # SECCIÓN DEL CARRITO EN LA PARTE SUPERIOR (Visible al instante con cantidades)
+    # SECCIÓN DEL CARRITO EN LA PARTE SUPERIOR
     # -------------------------------------------------------------
     total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
     total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
@@ -156,22 +167,24 @@ else:
             for prod_id, item in list(st.session_state.carrito.items()):
                 subtotal = item["precio"] * item["cantidad"]
                 
-                col_det1, col_det2, col_det3, col_det4 = st.columns([3, 1, 1, 1])
+                # Columnas ordenadas: Info, Botón Plus (+), Cantidad, Botón Minus (-), Botón Borrar (🗑️)
+                col_det1, col_plus, col_qty, col_minus, col_del = st.columns([2.2, 0.9, 0.9, 0.9, 0.9])
                 with col_det1:
-                    # Se incluye explícitamente la cantidad (ej: 2x Producto)
-                    st.write(f"**{item['cantidad']}x {item['producto']}**\n`{item['marca']}` • Subtotal: ${subtotal:,.0f}".replace(",", "."))
-                with col_det2:
+                    st.write(f"**{item['producto']}**\n`{item['marca']}` • Subtotal: ${subtotal:,.0f}".replace(",", "."))
+                with col_plus:
                     if st.button("➕", key=f"top_plus_{prod_id}"):
                         st.session_state.carrito[prod_id]["cantidad"] += 1
                         st.rerun()
-                with col_det3:
+                with col_qty:
+                    st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 16px; padding-top: 8px;'>{item['cantidad']}</div>", unsafe_allow_html=True)
+                with col_minus:
                     if st.button("➖", key=f"top_minus_{prod_id}"):
                         if st.session_state.carrito[prod_id]["cantidad"] > 1:
                             st.session_state.carrito[prod_id]["cantidad"] -= 1
                         else:
                             del st.session_state.carrito[prod_id]
                         st.rerun()
-                with col_det4:
+                with col_del:
                     if st.button("🗑️", key=f"top_del_{prod_id}"):
                         del st.session_state.carrito[prod_id]
                         st.rerun()
@@ -262,7 +275,12 @@ else:
             col = cols[idx % 2]
             with col:
                 stock = prod.get("stock", 0)
+                prod_id = str(prod.get("cod", prod.get("producto")))
                 
+                # Verificamos si el producto ya está en el carrito
+                en_carrito = prod_id in st.session_state.carrito
+                qty_en_carrito = st.session_state.carrito[prod_id]["cantidad"] if en_carrito else 0
+
                 if stock <= 0:
                     badge_html = '<span class="badge-out">Sin stock</span>'
                 elif stock == 1:
@@ -288,10 +306,14 @@ else:
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                    
+                    # Leyenda visual si el producto fue agregado al carrito
+                    if en_carrito:
+                        st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
+                    
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
                     # Botón para agregar al carrito
-                    prod_id = str(prod.get("cod", prod.get("producto")))
                     if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                         if prod_id in st.session_state.carrito:
                             st.session_state.carrito[prod_id]["cantidad"] += 1
@@ -303,7 +325,7 @@ else:
                                 "cantidad": 1
                             }
                         
-                        # Notificación nativa toast en la esquina superior derecha
+                        # Notificación nativa toast
                         st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
                         st.rerun()
                     
