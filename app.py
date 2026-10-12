@@ -137,72 +137,16 @@ def cargar_datos():
     except Exception as e:
         return []
 
-# Inicializar estado del Carrito
+# Inicializar estado del Carrito y Categoría
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
+
+if "categoria_activa" not in st.session_state:
+    st.session_state.categoria_activa = "Todas"
 
 # Encabezado principal estilo E-commerce
 st.title("🛍️ Catálogo Exclusivo")
 st.markdown("Elegí tus productos, armá tu pedido y envianos la lista al instante por WhatsApp.")
-
-# -------------------------------------------------------------
-# ANCLA Y SECCIÓN DEL CARRITO EN LA PARTE SUPERIOR
-# -------------------------------------------------------------
-st.markdown('<div id="carrito-arriba"></div>', unsafe_allow_html=True)
-
-total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
-total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
-
-if total_items > 0:
-    st.markdown(f"""
-        <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <span style="font-weight: bold; font-size: 15px;">🛒 Carrito de Compras ({total_items} productos)</span>
-            <span style="font-weight: bold; font-size: 15px;">Total: $ {total_general:,.0f}</span>
-        </div>
-    """.replace(",", "."), unsafe_allow_html=True)
-
-    with st.expander("📦 Ver detalle del pedido y enviar a WhatsApp", expanded=True):
-        mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
-        
-        for prod_id, item in list(st.session_state.carrito.items()):
-            subtotal = item["precio"] * item["cantidad"]
-            
-            col_det1, col_plus, col_qty, col_minus, col_del = st.columns([2.2, 0.9, 0.9, 0.9, 0.9])
-            with col_det1:
-                st.write(f"**{item['producto']}**\n`{item['marca']}` • Subtotal: ${subtotal:,.0f}".replace(",", "."))
-            with col_plus:
-                if st.button("➕", key=f"top_plus_{prod_id}"):
-                    st.session_state.carrito[prod_id]["cantidad"] += 1
-                    st.rerun()
-            with col_qty:
-                st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 16px; padding-top: 8px;'>{item['cantidad']}</div>", unsafe_allow_html=True)
-            with col_minus:
-                if st.button("➖", key=f"top_minus_{prod_id}"):
-                    if st.session_state.carrito[prod_id]["cantidad"] > 1:
-                        st.session_state.carrito[prod_id]["cantidad"] -= 1
-                    else:
-                        del st.session_state.carrito[prod_id]
-                    st.rerun()
-            with col_del:
-                if st.button("🗑️", key=f"top_del_{prod_id}"):
-                    del st.session_state.carrito[prod_id]
-                    st.rerun()
-            
-            mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: $ {subtotal:,.0f}\n"
-            st.markdown("---")
-
-        st.markdown(f"### Total General: $ {total_general:,.0f}".replace(",", "."))
-        mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
-        
-        wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
-        
-        st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
-        
-        if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
-            st.session_state.carrito = {}
-            st.rerun()
-
-st.markdown("---")
 
 productos = cargar_datos()
 
@@ -210,24 +154,21 @@ if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
     # -------------------------------------------------------------
-    # SECCIÓN DE CATEGORÍAS (Tarjetas de navegación rápida)
+    # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
     # -------------------------------------------------------------
     st.markdown("### 🗂️ Categorías")
-    if "categoria_activa" not in st.session_state:
-        st.session_state.categoria_activa = "Todas"
-
-    cat_cols = st.columns(4)
-    with cat_cols[0]:
-        if st.button("🏠 Todas", use_container_width=True):
+    cat_cols_top = st.columns(4)
+    with cat_cols_top[0]:
+        if st.button("🏠 Todas", key="cat_top_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
-    with cat_cols[1]:
-        if st.button("📺 Hogar", use_container_width=True):
+    with cat_cols_top[1]:
+        if st.button("📺 Hogar", key="cat_top_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
-    with cat_cols[2]:
-        if st.button("🌀 Lavado", use_container_width=True):
+    with cat_cols_top[2]:
+        if st.button("🌀 Lavado", key="cat_top_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
-    with cat_cols[3]:
-        if st.button("🍳 Cocina", use_container_width=True):
+    with cat_cols_top[3]:
+        if st.button("🍳 Cocina", key="cat_top_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
 
     st.markdown("---")
@@ -310,10 +251,10 @@ else:
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                     
-                    # Leyenda visual y enlace directo al carrito en la parte superior
+                    # Leyenda visual y enlace directo al carrito en el pie de página
                     if en_carrito:
                         st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
-                        st.markdown('<a href="#carrito-arriba" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
+                        st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                     
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
@@ -333,3 +274,87 @@ else:
                         st.rerun()
                     
                     st.markdown('</div>', unsafe_allow_html=True)
+
+    # -------------------------------------------------------------
+    # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
+    # -------------------------------------------------------------
+    st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("### 🛒 Carrito de Compras y Pedido")
+
+    total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
+    total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
+
+    if total_items == 0:
+        st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
+    else:
+        st.markdown(f"""
+            <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <span style="font-weight: bold; font-size: 15px;">🛒 Total de Artículos: {total_items}</span>
+                <span style="font-weight: bold; font-size: 15px;">Total: $ {total_general:,.0f}</span>
+            </div>
+        """.replace(",", "."), unsafe_allow_html=True)
+
+        with st.expander("📦 Ver detalle completo del pedido y enviar a WhatsApp", expanded=True):
+            mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
+            
+            for prod_id, item in list(st.session_state.carrito.items()):
+                subtotal = item["precio"] * item["cantidad"]
+                
+                col_det1, col_plus, col_qty, col_minus, col_del = st.columns([2.2, 0.9, 0.9, 0.9, 0.9])
+                with col_det1:
+                    st.write(f"**{item['producto']}**\n`{item['marca']}` • Subtotal: ${subtotal:,.0f}".replace(",", "."))
+                with col_plus:
+                    if st.button("➕", key=f"foot_plus_{prod_id}"):
+                        st.session_state.carrito[prod_id]["cantidad"] += 1
+                        st.rerun()
+                with col_qty:
+                    st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 16px; padding-top: 8px;'>{item['cantidad']}</div>", unsafe_allow_html=True)
+                with col_minus:
+                    if st.button("➖", key=f"foot_minus_{prod_id}"):
+                        if st.session_state.carrito[prod_id]["cantidad"] > 1:
+                            st.session_state.carrito[prod_id]["cantidad"] -= 1
+                        else:
+                            del st.session_state.carrito[prod_id]
+                        st.rerun()
+                with col_del:
+                    if st.button("🗑️", key=f"foot_del_{prod_id}"):
+                        del st.session_state.carrito[prod_id]
+                        st.rerun()
+                
+                mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: $ {subtotal:,.0f}\n"
+                st.markdown("---")
+
+            st.markdown(f"### Total General: $ {total_general:,.0f}".replace(",", "."))
+            mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
+            
+            wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
+            
+            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
+            
+            if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
+                st.session_state.carrito = {}
+                st.rerun()
+
+    # -------------------------------------------------------------
+    # 3. SECCIÓN DE CATEGORÍAS (También al final de la página)
+    # -------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("### 🗂️ Categorías (Explorar más)")
+    cat_cols_bottom = st.columns(4)
+    with cat_cols_bottom[0]:
+        if st.button("🏠 Todas", key="cat_bot_todas", use_container_width=True):
+            st.session_state.categoria_activa = "Todas"
+            st.rerun()
+    with cat_cols_bottom[1]:
+        if st.button("📺 Hogar", key="cat_bot_hogar", use_container_width=True):
+            st.session_state.categoria_activa = "Hogar"
+            st.rerun()
+    with cat_cols_bottom[2]:
+        if st.button("🌀 Lavado", key="cat_bot_lavado", use_container_width=True):
+            st.session_state.categoria_activa = "Lavado"
+            st.rerun()
+    with cat_cols_bottom[3]:
+        if st.button("🍳 Cocina", key="cat_bot_cocina", use_container_width=True):
+            st.session_state.categoria_activa = "Cocina"
+            st.rerun()
