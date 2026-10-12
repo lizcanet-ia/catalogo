@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="Catálogo de Productos",
     page_icon="🛍️",
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="auto"
 )
 
 # Estilos CSS profesionales inspirados en e-commerce
@@ -27,10 +27,6 @@ st.markdown("""
         justify-content: space-between;
         height: 100%;
         margin-bottom: 16px;
-        transition: box-shadow 0.2s ease;
-    }
-    .product-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     .badge-last {
         background-color: #fee2e2;
@@ -126,27 +122,83 @@ def cargar_datos():
     except Exception as e:
         return []
 
-# Encabezado principal
+# Inicializar estado del Carrito de Compras
+if "carrito" not in st.session_state:
+    st.session_state.carrito = {}
+
+# -------------------------------------------------------------
+# PANEL LATERAL: CARRITO DE COMPRAS / COTIZADOR
+# -------------------------------------------------------------
+with st.sidebar:
+    st.title("🛒 Tu Carrito")
+    st.markdown("Resumen de tu pedido para enviar por WhatsApp.")
+    st.markdown("---")
+    
+    if not st.session_state.carrito:
+        st.info("El carrito está vacío. ¡Agregá productos desde el catálogo!")
+    else:
+        total_general = 0
+        mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
+        
+        # Iterar sobre los productos en el carrito
+        for prod_id, item in list(st.session_state.carrito.items()):
+            subtotal = item["precio"] * item["cantidad"]
+            total_general += subtotal
+            
+            st.markdown(f"**{item['producto']}**")
+            st.markdown(f"Marca: `{item['marca']}` | Cant: **{item['cantidad']}**")
+            st.markdown(f"Subtotal: **$ {subtotal:,.0f}**".replace(",", "."))
+            
+            # Botones para sumar, restar o eliminar unidad
+            col_b1, col_b2, col_b3 = st.columns(3)
+            with col_b1:
+                if st.button("➕", key=f"plus_{prod_id}"):
+                    st.session_state.carrito[prod_id]["cantidad"] += 1
+                    st.rerun()
+            with col_b2:
+                if st.button("➖", key=f"minus_{prod_id}"):
+                    if st.session_state.carrito[prod_id]["cantidad"] > 1:
+                        st.session_state.carrito[prod_id]["cantidad"] -= 1
+                    else:
+                        del st.session_state.carrito[prod_id]
+                    st.rerun()
+            with col_b3:
+                if st.button("🗑️", key=f"del_{prod_id}"):
+                    del st.session_state.carrito[prod_id]
+                    st.rerun()
+            
+            mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: $ {subtotal:,.0f}\n"
+            st.markdown("---")
+
+        st.markdown(f"### Total: $ {total_general:,.0f}".replace(",", "."))
+        mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
+        
+        # Enlace de WhatsApp con el pedido consolidado
+        wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
+        
+        st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:12px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📤 Enviar pedido por WhatsApp</a>', unsafe_allow_html=True)
+        
+        if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
+            st.session_state.carrito = {}
+            st.rerun()
+
+# -------------------------------------------------------------
+# CUERPO PRINCIPAL DEL CATÁLOGO
+# -------------------------------------------------------------
 st.title("🛍️ Nuestros productos elegidos para vos")
-st.markdown("Explorá nuestro catálogo y consultá al instante por WhatsApp.")
+st.markdown("Explorá nuestro catálogo, armá tu pedido y envianos la lista al instante.")
 
 productos = cargar_datos()
 
 if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
-    # -------------------------------------------------------------
-    # SECCIÓN DE CATEGORÍAS TIPO TARJETA / BOTONES
-    # -------------------------------------------------------------
+    # Categorías estilo botones rápidos
     st.markdown("### 🗂️ Categorías")
-    
-    # Creamos un sistema de estado para recordar la categoría seleccionada
     if "categoria_activa" not in st.session_state:
         st.session_state.categoria_activa = "Todas"
 
-    # Botones de categoría en columnas horizontales (ideal para móviles)
     cat_cols = st.columns(4)
-    
     with cat_cols[0]:
         if st.button("🏠 Todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
@@ -162,7 +214,7 @@ else:
 
     st.markdown("---")
 
-    # Buscador manual y Filtro de marcas secundario
+    # Buscador y Filtro de marcas
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
         busqueda = st.text_input("🔍 Buscar...", placeholder="Producto, marca o código")
@@ -170,20 +222,14 @@ else:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
         marca_seleccionada = st.selectbox("Marca", marcas)
 
-    # -------------------------------------------------------------
-    # LÓGICA DE FILTRADO (Categorías + Buscador + Marca)
-    # -------------------------------------------------------------
+    # Lógica de filtrado
     productos_filtrados = []
-    
-    # Palabras clave por categoría
     keywords_hogar = ["tv", "ventilador", "aire acondicionado"]
     keywords_lavado = ["lavarropas", "aspiradora"]
     keywords_cocina = ["cocina", "pava", "microondas", "heladera"]
 
     for p in productos:
         nombre_prod = p.get("producto", "").lower()
-        
-        # 1. Filtro por Categoría de Tarjetas
         match_categoria = True
         cat = st.session_state.categoria_activa
         if cat == "Hogar":
@@ -193,10 +239,7 @@ else:
         elif cat == "Cocina":
             match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
 
-        # 2. Filtro por Marca
         match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
-        
-        # 3. Filtro por Buscador de texto
         query = busqueda.lower().strip()
         match_query = (
             not query or
@@ -209,18 +252,16 @@ else:
             productos_filtrados.append(p)
 
     if not productos_filtrados:
-        st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}' que coincidan con tu búsqueda.")
+        st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}'.")
     else:
         st.write(f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)")
         
-        # Grid de 2 columnas con tarjetas estilo E-commerce
         cols = st.columns(2)
         for idx, prod in enumerate(productos_filtrados):
             col = cols[idx % 2]
             with col:
                 stock = prod.get("stock", 0)
                 
-                # Insignias de Stock
                 if stock <= 0:
                     badge_html = '<span class="badge-out">Sin stock</span>'
                 elif stock == 1:
@@ -230,29 +271,37 @@ else:
                 else:
                     badge_html = '<span class="badge-ok">Disponible ✓</span>'
 
-                precio_str = f"$ {prod.get('precioVenta', 0):,.0f}".replace(",", ".")
+                precio_num = prod.get('precioVenta', 0)
+                precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
-                    # Imagen del producto
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
                         st.image(img_url, use_column_width=True)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
-                    # Textos y detalles
                     st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
-                    # Botón de WhatsApp
-                    wa_msg = f"Hola, me interesa un producto del catalogo, quiero información sobre {prod.get('producto', '')}, {prod.get('marca', '')} y {precio_str}."
-                    wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(wa_msg)}"
-                    
-                    st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:8px 10px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:600; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💬 Consultar por WhatsApp</a>', unsafe_allow_html=True)
+                    # Botón para agregar al carrito
+                    prod_id = str(prod.get("cod", prod.get("producto")))
+                    if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
+                        if prod_id in st.session_state.carrito:
+                            st.session_state.carrito[prod_id]["cantidad"] += 1
+                        else:
+                            st.session_state.carrito[prod_id] = {
+                                "producto": prod.get("producto"),
+                                "marca": prod.get("marca"),
+                                "precio": precio_num,
+                                "cantidad": 1
+                            }
+                        st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
+                        st.rerun()
                     
                     st.markdown('</div>', unsafe_allow_html=True)
