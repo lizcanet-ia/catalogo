@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales con soporte para anclaje suave
+# Estilos CSS profesionales con soporte para desplazamiento suave
 st.markdown("""
     <style>
     .main {
@@ -130,23 +130,12 @@ def cargar_datos():
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
 
-if "ultimo_agregado" not in st.session_state:
-    st.session_state.ultimo_agregado = None
+if "ir_al_carrito" not in st.session_state:
+    st.session_state.ir_al_carrito = False
 
 # Encabezado principal estilo E-commerce
 st.title("🛍️ Catálogo Exclusivo")
 st.markdown("Elegí tus productos, armá tu pedido y envianos la lista al instante por WhatsApp.")
-
-# -------------------------------------------------------------
-# ALERTA DINÁMICA CON BOTÓN "VER CARRITO"
-# -------------------------------------------------------------
-if st.session_state.ultimo_agregado:
-    st.markdown(f"""
-        <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <span style="font-weight: 600; font-size: 14px;">✅ ¡Agregado: {st.session_state.ultimo_agregado}!</span>
-            <a href="#carrito-seccion" style="background-color: white; color: #047857; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Ver Carrito 🛒</a>
-        </div>
-    """, unsafe_allow_html=True)
 
 productos = cargar_datos()
 
@@ -263,8 +252,11 @@ else:
                                 "precio": precio_num,
                                 "cantidad": 1
                             }
-                        # Guardamos el nombre del último producto agregado para mostrar el banner
-                        st.session_state.ultimo_agregado = prod.get('producto')
+                        
+                        # Activamos la notificación toast nativa
+                        st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
+                        # Activamos la bandera para realizar el scroll automático hacia el carrito
+                        st.session_state.ir_al_carrito = True
                         st.rerun()
                     
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -272,9 +264,13 @@ else:
     # -------------------------------------------------------------
     # ANCLAJE Y SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
     # -------------------------------------------------------------
-    # Este div actúa como punto de destino al hacer clic en "Ver Carrito"
     st.markdown('<div id="carrito-seccion"></div>', unsafe_allow_html=True)
     
+    # Si la bandera está activa, inyectamos el script de JavaScript para hacer scroll suave hasta el ancla
+    if st.session_state.ir_al_carrito:
+        st.markdown('<script>window.location.hash = "#carrito-seccion";</script>', unsafe_allow_html=True)
+        st.session_state.ir_al_carrito = False
+
     total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
     total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
@@ -318,7 +314,7 @@ else:
         
         if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
             st.session_state.carrito = {}
-            st.session_state.ultimo_agregado = None
+            st.session_state.ir_al_carrito = False
             st.rerun()
     else:
         st.info("Tu carrito está vacío. ¡Agregá productos para verlos acá resumidos!")
