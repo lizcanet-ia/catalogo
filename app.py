@@ -10,15 +10,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales con soporte para desplazamiento suave
+# Estilos CSS profesionales
 st.markdown("""
     <style>
     .main {
         background-color: #f4f5f7;
         padding-bottom: 80px;
-    }
-    html {
-        scroll-behavior: smooth;
     }
     .product-card {
         background-color: white;
@@ -126,12 +123,9 @@ def cargar_datos():
     except Exception as e:
         return []
 
-# Inicializar estados
+# Inicializar estado del Carrito
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
-
-if "ir_al_carrito" not in st.session_state:
-    st.session_state.ir_al_carrito = False
 
 # Encabezado principal estilo E-commerce
 st.title("🛍️ Catálogo Exclusivo")
@@ -142,6 +136,62 @@ productos = cargar_datos()
 if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
+    # -------------------------------------------------------------
+    # SECCIÓN DEL CARRITO EN LA PARTE SUPERIOR (Visible al instante con cantidades)
+    # -------------------------------------------------------------
+    total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
+    total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
+
+    if total_items > 0:
+        st.markdown(f"""
+            <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <span style="font-weight: bold; font-size: 15px;">🛒 Carrito de Compras ({total_items} productos)</span>
+                <span style="font-weight: bold; font-size: 15px;">Total: $ {total_general:,.0f}</span>
+            </div>
+        """.replace(",", "."), unsafe_allow_html=True)
+
+        with st.expander("📦 Ver detalle del pedido y enviar a WhatsApp", expanded=True):
+            mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
+            
+            for prod_id, item in list(st.session_state.carrito.items()):
+                subtotal = item["precio"] * item["cantidad"]
+                
+                col_det1, col_det2, col_det3, col_det4 = st.columns([3, 1, 1, 1])
+                with col_det1:
+                    # Se incluye explícitamente la cantidad (ej: 2x Producto)
+                    st.write(f"**{item['cantidad']}x {item['producto']}**\n`{item['marca']}` • Subtotal: ${subtotal:,.0f}".replace(",", "."))
+                with col_det2:
+                    if st.button("➕", key=f"top_plus_{prod_id}"):
+                        st.session_state.carrito[prod_id]["cantidad"] += 1
+                        st.rerun()
+                with col_det3:
+                    if st.button("➖", key=f"top_minus_{prod_id}"):
+                        if st.session_state.carrito[prod_id]["cantidad"] > 1:
+                            st.session_state.carrito[prod_id]["cantidad"] -= 1
+                        else:
+                            del st.session_state.carrito[prod_id]
+                        st.rerun()
+                with col_det4:
+                    if st.button("🗑️", key=f"top_del_{prod_id}"):
+                        del st.session_state.carrito[prod_id]
+                        st.rerun()
+                
+                mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: $ {subtotal:,.0f}\n"
+                st.markdown("---")
+
+            st.markdown(f"### Total General: $ {total_general:,.0f}".replace(",", "."))
+            mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
+            
+            wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
+            
+            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
+            
+            if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
+                st.session_state.carrito = {}
+                st.rerun()
+
+    st.markdown("---")
+
     # -------------------------------------------------------------
     # SECCIÓN DE CATEGORÍAS (Tarjetas de navegación rápida)
     # -------------------------------------------------------------
@@ -253,68 +303,8 @@ else:
                                 "cantidad": 1
                             }
                         
-                        # Activamos la notificación toast nativa
+                        # Notificación nativa toast en la esquina superior derecha
                         st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
-                        # Activamos la bandera para realizar el scroll automático hacia el carrito
-                        st.session_state.ir_al_carrito = True
                         st.rerun()
                     
                     st.markdown('</div>', unsafe_allow_html=True)
-
-    # -------------------------------------------------------------
-    # ANCLAJE Y SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
-    # -------------------------------------------------------------
-    st.markdown('<div id="carrito-seccion"></div>', unsafe_allow_html=True)
-    
-    # Si la bandera está activa, inyectamos el script de JavaScript para hacer scroll suave hasta el ancla
-    if st.session_state.ir_al_carrito:
-        st.markdown('<script>window.location.hash = "#carrito-seccion";</script>', unsafe_allow_html=True)
-        st.session_state.ir_al_carrito = False
-
-    total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
-    total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
-
-    if total_items > 0:
-        st.markdown("---")
-        st.markdown("### 🛒 Resumen de tu Carrito y Pedido")
-        
-        mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
-        
-        for prod_id, item in list(st.session_state.carrito.items()):
-            subtotal = item["precio"] * item["cantidad"]
-            
-            col_det1, col_det2, col_det3, col_det4 = st.columns([3, 1, 1, 1])
-            with col_det1:
-                st.write(f"**{item['producto']}**\n`{item['marca']}` • ${subtotal:,.0f}".replace(",", "."))
-            with col_det2:
-                if st.button("➕", key=f"foot_plus_{prod_id}"):
-                    st.session_state.carrito[prod_id]["cantidad"] += 1
-                    st.rerun()
-            with col_det3:
-                if st.button("➖", key=f"foot_minus_{prod_id}"):
-                    if st.session_state.carrito[prod_id]["cantidad"] > 1:
-                        st.session_state.carrito[prod_id]["cantidad"] -= 1
-                    else:
-                        del st.session_state.carrito[prod_id]
-                    st.rerun()
-            with col_det4:
-                if st.button("🗑️", key=f"foot_del_{prod_id}"):
-                    del st.session_state.carrito[prod_id]
-                    st.rerun()
-            
-            mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: $ {subtotal:,.0f}\n"
-            st.markdown("---")
-
-        st.markdown(f"### Total General: $ {total_general:,.0f}".replace(",", "."))
-        mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
-        
-        wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
-        
-        st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 20px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
-        
-        if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
-            st.session_state.carrito = {}
-            st.session_state.ir_al_carrito = False
-            st.rerun()
-    else:
-        st.info("Tu carrito está vacío. ¡Agregá productos para verlos acá resumidos!")
