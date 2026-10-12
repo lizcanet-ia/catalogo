@@ -10,12 +10,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales con barra flotante inferior fija para móviles
+# Estilos CSS profesionales con soporte para anclaje suave
 st.markdown("""
     <style>
     .main {
         background-color: #f4f5f7;
-        padding-bottom: 80px; /* Espacio para que la barra flotante no tape los productos */
+        padding-bottom: 80px;
+    }
+    html {
+        scroll-behavior: smooth;
     }
     .product-card {
         background-color: white;
@@ -123,13 +126,27 @@ def cargar_datos():
     except Exception as e:
         return []
 
-# Inicializar estado del Carrito de Compras
+# Inicializar estados
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
+
+if "ultimo_agregado" not in st.session_state:
+    st.session_state.ultimo_agregado = None
 
 # Encabezado principal estilo E-commerce
 st.title("🛍️ Catálogo Exclusivo")
 st.markdown("Elegí tus productos, armá tu pedido y envianos la lista al instante por WhatsApp.")
+
+# -------------------------------------------------------------
+# ALERTA DINÁMICA CON BOTÓN "VER CARRITO"
+# -------------------------------------------------------------
+if st.session_state.ultimo_agregado:
+    st.markdown(f"""
+        <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <span style="font-weight: 600; font-size: 14px;">✅ ¡Agregado: {st.session_state.ultimo_agregado}!</span>
+            <a href="#carrito-seccion" style="background-color: white; color: #047857; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Ver Carrito 🛒</a>
+        </div>
+    """, unsafe_allow_html=True)
 
 productos = cargar_datos()
 
@@ -246,14 +263,18 @@ else:
                                 "precio": precio_num,
                                 "cantidad": 1
                             }
-                        st.toast(f"¡Agregado: {prod.get('producto')}!", icon="🛒")
+                        # Guardamos el nombre del último producto agregado para mostrar el banner
+                        st.session_state.ultimo_agregado = prod.get('producto')
                         st.rerun()
                     
                     st.markdown('</div>', unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # PANEL DE DETALLE Y PIE DE PÁGINA (CARRITO FLOTANTE Y GESTIÓN)
+    # ANCLAJE Y SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
     # -------------------------------------------------------------
+    # Este div actúa como punto de destino al hacer clic en "Ver Carrito"
+    st.markdown('<div id="carrito-seccion"></div>', unsafe_allow_html=True)
+    
     total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
     total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
@@ -297,4 +318,7 @@ else:
         
         if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
             st.session_state.carrito = {}
+            st.session_state.ultimo_agregado = None
             st.rerun()
+    else:
+        st.info("Tu carrito está vacío. ¡Agregá productos para verlos acá resumidos!")
