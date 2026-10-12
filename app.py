@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales inspirados en e-commerce de alta gama
+# Estilos CSS profesionales inspirados en e-commerce
 st.markdown("""
     <style>
     .main {
@@ -127,15 +127,42 @@ def cargar_datos():
         return []
 
 # Encabezado principal
-st.title("🛍️ Nuestros productos")
-st.markdown("Explorá nuestro catálogo y comprá al instante por WhatsApp.")
+st.title("🛍️ Nuestros productos elegidos para vos")
+st.markdown("Explorá nuestro catálogo y consultá al instante por WhatsApp.")
 
 productos = cargar_datos()
 
 if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
-    # Buscador y Filtros ordenados
+    # -------------------------------------------------------------
+    # SECCIÓN DE CATEGORÍAS TIPO TARJETA / BOTONES
+    # -------------------------------------------------------------
+    st.markdown("### 🗂️ Categorías")
+    
+    # Creamos un sistema de estado para recordar la categoría seleccionada
+    if "categoria_activa" not in st.session_state:
+        st.session_state.categoria_activa = "Todas"
+
+    # Botones de categoría en columnas horizontales (ideal para móviles)
+    cat_cols = st.columns(4)
+    
+    with cat_cols[0]:
+        if st.button("🏠 Todas", use_container_width=True):
+            st.session_state.categoria_activa = "Todas"
+    with cat_cols[1]:
+        if st.button("📺 Hogar", use_container_width=True):
+            st.session_state.categoria_activa = "Hogar"
+    with cat_cols[2]:
+        if st.button("🌀 Lavado", use_container_width=True):
+            st.session_state.categoria_activa = "Lavado"
+    with cat_cols[3]:
+        if st.button("🍳 Cocina", use_container_width=True):
+            st.session_state.categoria_activa = "Cocina"
+
+    st.markdown("---")
+
+    # Buscador manual y Filtro de marcas secundario
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
         busqueda = st.text_input("🔍 Buscar...", placeholder="Producto, marca o código")
@@ -143,33 +170,57 @@ else:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
         marca_seleccionada = st.selectbox("Marca", marcas)
 
-    # Filtrado lógico
+    # -------------------------------------------------------------
+    # LÓGICA DE FILTRADO (Categorías + Buscador + Marca)
+    # -------------------------------------------------------------
     productos_filtrados = []
+    
+    # Palabras clave por categoría
+    keywords_hogar = ["tv", "ventilador", "aire acondicionado"]
+    keywords_lavado = ["lavarropas", "aspiradora"]
+    keywords_cocina = ["cocina", "pava", "microondas", "heladera"]
+
     for p in productos:
+        nombre_prod = p.get("producto", "").lower()
+        
+        # 1. Filtro por Categoría de Tarjetas
+        match_categoria = True
+        cat = st.session_state.categoria_activa
+        if cat == "Hogar":
+            match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
+        elif cat == "Lavado":
+            match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
+        elif cat == "Cocina":
+            match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
+
+        # 2. Filtro por Marca
         match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
+        
+        # 3. Filtro por Buscador de texto
         query = busqueda.lower().strip()
         match_query = (
             not query or
-            query in p.get("producto", "").lower() or
+            query in nombre_prod or
             query in p.get("marca", "").lower() or
             query in str(p.get("cod", "")).lower()
         )
-        if match_marca and match_query:
+
+        if match_categoria and match_marca and match_query:
             productos_filtrados.append(p)
 
     if not productos_filtrados:
-        st.info("No se encontraron productos que coincidan con tu búsqueda.")
+        st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}' que coincidan con tu búsqueda.")
     else:
-        st.write(f"Mostrando {len(productos_filtrados)} artículos")
+        st.write(f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)")
         
-        # Grid de 2 columnas con tarjetas estilo E-commerce moderno
+        # Grid de 2 columnas con tarjetas estilo E-commerce
         cols = st.columns(2)
         for idx, prod in enumerate(productos_filtrados):
             col = cols[idx % 2]
             with col:
                 stock = prod.get("stock", 0)
                 
-                # Insignias de Stock estilizadas
+                # Insignias de Stock
                 if stock <= 0:
                     badge_html = '<span class="badge-out">Sin stock</span>'
                 elif stock == 1:
@@ -181,7 +232,6 @@ else:
 
                 precio_str = f"$ {prod.get('precioVenta', 0):,.0f}".replace(",", ".")
                 
-                # Renderizado dentro de contenedor tipo tarjeta
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
@@ -199,7 +249,7 @@ else:
                     st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
-                    # Botón de WhatsApp con diseño e-commerce
+                    # Botón de WhatsApp
                     wa_msg = f"Hola, me interesa un producto del catalogo, quiero información sobre {prod.get('producto', '')}, {prod.get('marca', '')} y {precio_str}."
                     wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(wa_msg)}"
                     
