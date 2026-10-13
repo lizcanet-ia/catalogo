@@ -347,7 +347,7 @@ else:
                     
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
-                    if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_column_width=True):
+                    if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                         if prod_id in st.session_state.carrito:
                             st.session_state.carrito[prod_id]["cantidad"] += 1
                         else:
