@@ -4,13 +4,13 @@ import urllib.parse
 
 # Configuración de la página optimizada para móviles
 st.set_page_config(
-    page_title="Catálogo de Productos",
-    page_icon="🛍️",
+    page_title="ELECTRO+",
+    page_icon="⚡",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales con desplazamiento suave (smooth scroll)
+# Estilos CSS profesionales inspirados en e-commerce de alta gama
 st.markdown("""
     <style>
     .main {
@@ -19,6 +19,41 @@ st.markdown("""
     }
     html {
         scroll-behavior: smooth;
+    }
+    .top-bar {
+        background-color: #7c3aed;
+        height: 6px;
+        width: 100%;
+        margin-bottom: 12px;
+        border-radius: 3px;
+    }
+    .brand-logo {
+        font-size: 24px;
+        font-weight: 900;
+        color: #111827;
+        letter-spacing: -0.5px;
+    }
+    .brand-logo span {
+        color: #7c3aed;
+    }
+    .benefits-bar {
+        display: flex;
+        justify-content: space-around;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px 8px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .benefit-item {
+        font-size: 10px;
+        font-weight: 700;
+        color: #374151;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
     }
     .product-card {
         background-color: white;
@@ -137,18 +172,47 @@ def cargar_datos():
     except Exception as e:
         return []
 
-# Inicializar estado del Carrito y Categoría
+# Inicializar estados
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
 
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
-# Encabezado principal estilo E-commerce
-st.title("Catálogo Exclusivo")
-st.markdown("Elegí tus productos, armá tu pedido y envianos la lista al instante por WhatsApp.")
+# Barra superior purpura
+st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 
 productos = cargar_datos()
+
+# Encabezado E-commerce (ELECTRO+ y contador de carrito)
+total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
+total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
+
+col_logo, col_cart = st.columns([3, 1])
+with col_logo:
+    st.markdown('<div class="brand-logo">ELECTRO<span>+</span></div>', unsafe_allow_html=True)
+with col_cart:
+    st.markdown(f'<div style="text-align: right; background-color: #f3f4f6; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; color: #374151;">🛒 {total_items} items</div>', unsafe_allow_html=True)
+
+st.markdown("")
+
+# Barra de beneficios institucional
+st.markdown("""
+    <div class="benefits-bar">
+        <div class="benefit-item">
+            <span style="font-size: 16px;">🏪</span>
+            <span>RETIRÁ GRATIS EN SUCURSAL</span>
+        </div>
+        <div class="benefit-item">
+            <span style="font-size: 16px;">🎧</span>
+            <span>VENTA POR WHATSAPP</span>
+        </div>
+        <div class="benefit-item">
+            <span style="font-size: 16px;">📦</span>
+            <span>ENVÍOS A TODO EL PAÍS</span>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
@@ -156,7 +220,7 @@ else:
     # -------------------------------------------------------------
     # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
     # -------------------------------------------------------------
-    st.markdown("### Categorías")
+    st.markdown("### 🗂️ Categorías")
     cat_cols_top = st.columns(4)
     with cat_cols_top[0]:
         if st.button("🏠 Todas", key="cat_top_todas", use_container_width=True):
@@ -184,10 +248,10 @@ else:
     # Ancla invisible para redirección
     st.markdown('<div id="catalogo-productos"></div>', unsafe_allow_html=True)
 
-    # Buscador y Filtro de marcas
+    # Buscador Global y Filtro de marcas ("Encontrá lo que querés")
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
-        busqueda = st.text_input("🔍 Buscar...", placeholder="Producto, marca o código")
+        busqueda = st.text_input("🔍 Buscar...", placeholder="Encontrá lo que querés")
     with col_marca:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
         marca_seleccionada = st.selectbox("Marca", marcas)
@@ -205,7 +269,6 @@ else:
     for p in productos:
         nombre_prod = p.get("producto", "").lower()
         
-        # SI EL USUARIO ESTÁ BUSCANDO POR TEXTO, IGNORAMOS LA CATEGORÍA (Búsqueda Global)
         if query:
             match_categoria = True
         else:
@@ -232,7 +295,6 @@ else:
 
     if not productos_filtrados:
         if query:
-            # Si buscó un producto y no está en absoluto en el catálogo
             st.warning(f"🔍 No encontramos **'{busqueda}'** en nuestro catálogo.")
             wa_msg_ausente = f"Hola, estoy buscando '{busqueda}' y no lo encontré en el catálogo. ¿Me podrán confirmar si lo tienen disponible o se puede conseguir?"
             wa_url_ausente = f"https://wa.me/5491165295937?text={urllib.parse.quote(wa_msg_ausente)}"
@@ -285,7 +347,7 @@ else:
                     
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
-                    if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
+                    if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_column_width=True):
                         if prod_id in st.session_state.carrito:
                             st.session_state.carrito[prod_id]["cantidad"] += 1
                         else:
@@ -307,9 +369,6 @@ else:
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("### 🛒 Carrito de Compras y Pedido")
-
-    total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
-    total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
@@ -366,7 +425,7 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### Categorías (Explorar más)")
+    st.markdown("### 🗂️ Categorías (Explorar más)")
     cat_cols_bottom = st.columns(4)
     with cat_cols_bottom[0]:
         if st.button("🏠 Todas", key="cat_bot_todas", use_container_width=True):
