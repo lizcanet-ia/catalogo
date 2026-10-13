@@ -32,20 +32,40 @@ st.markdown("""
         background-color: #7c3aed;
         height: 6px;
         width: 100%;
-        margin-top: 4px;
-        margin-bottom: 24px; /* Mayor separación entre la barra y el logo */
+        margin-top: 6px;
+        margin-bottom: 32px; /* Mayor separación entre la barra y el logo */
         border-radius: 3px;
     }
     
+    /* Logotipo ELECTRO+ ampliado un 15% (28px) */
     .brand-logo {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 900;
         color: #111827;
         letter-spacing: -0.5px;
+        line-height: 1.1;
     }
     
     .brand-logo span {
         color: #7c3aed;
+    }
+    
+    /* Enlace cliqueable para el contador de carrito */
+    .cart-link-badge {
+        display: block;
+        text-align: right;
+        background-color: #f3f4f6;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 13px;
+        color: #374151;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+    }
+    .cart-link-badge:hover {
+        background-color: #e5e7eb;
+        color: #111827;
     }
     
     .benefits-bar {
@@ -207,15 +227,15 @@ st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 
 productos = cargar_datos()
 
-# Encabezado E-commerce (ELECTRO+ y contador de carrito)
+# Encabezado E-commerce (ELECTRO+ y contador de carrito redireccionable)
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
 total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
-col_logo, col_cart = st.columns([3, 1])
+col_logo, col_cart = st.columns([2.8, 1.2])
 with col_logo:
     st.markdown('<div class="brand-logo">ELECTRO<span>+</span></div>', unsafe_allow_html=True)
 with col_cart:
-    st.markdown(f'<div style="text-align: right; background-color: #f3f4f6; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 13px; color: #374151;">🛒 {total_items} items</div>', unsafe_allow_html=True)
+    st.markdown(f'<a href="#carrito-abajo" class="cart-link-badge">🛒 {total_items} items</a>', unsafe_allow_html=True)
 
 st.markdown("")
 
