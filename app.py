@@ -27,11 +27,13 @@ st.markdown("""
         scroll-behavior: smooth;
     }
     
+    /* Barra superior violeta con mayor separación */
     .top-bar {
         background-color: #7c3aed;
         height: 6px;
         width: 100%;
-        margin-bottom: 12px;
+        margin-top: 4px;
+        margin-bottom: 24px; /* Mayor separación entre la barra y el logo */
         border-radius: 3px;
     }
     
@@ -353,7 +355,7 @@ else:
                     
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
-                        st.image(img_url, use_column_width=True)
+                        st.image(img_url, use_container_width=True)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -407,7 +409,6 @@ else:
             for prod_id, item in list(st.session_state.carrito.items()):
                 subtotal = item["precio"] * item["cantidad"]
                 
-                # Columnas limpias: Información del producto (2), Selector numérico de cantidad (2), Botón borrar (1)
                 c_info, c_qty, c_del = st.columns([2.5, 2, 1])
                 with c_info:
                     st.markdown(f"**{item['producto']}**<br><span style='font-size:11px; color:#7c3aed; font-weight:600;'>{item['marca']}</span><br><span style='font-size:12px; font-weight:700;'>Subtotal: ${subtotal:,.0f}</span>".replace(",", "."), unsafe_allow_html=True)
