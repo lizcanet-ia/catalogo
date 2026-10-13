@@ -50,7 +50,7 @@ st.markdown("""
         color: #7c3aed;
     }
     
-    /* Enlace cliqueable para el contador de carrito */
+    /* Enlace cliqueable para el contador de carrito ampliado un 25% (16px) */
     .cart-link-badge {
         display: block;
         text-align: right;
@@ -58,7 +58,7 @@ st.markdown("""
         padding: 8px 12px;
         border-radius: 8px;
         font-weight: bold;
-        font-size: 13px;
+        font-size: 16px; 
         color: #374151;
         text-decoration: none;
         transition: background-color 0.2s ease;
@@ -231,7 +231,7 @@ productos = cargar_datos()
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
 total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
-col_logo, col_cart = st.columns([2.8, 1.2])
+col_logo, col_cart = st.columns([2.6, 1.4])
 with col_logo:
     st.markdown('<div class="brand-logo">ELECTRO<span>+</span></div>', unsafe_allow_html=True)
 with col_cart:
@@ -375,7 +375,7 @@ else:
                     
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
-                        st.image(img_url, use_container_width=True)
+                        st.image(img_url, use_column_width=True)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
