@@ -10,9 +10,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales inspirados en e-commerce de alta gama
+# Estilos CSS profesionales unificando la tipografía sans-serif estilo "ELECTRO+"
 st.markdown("""
     <style>
+    /* Aplicar tipografía unificada sans-serif moderna a toda la página */
+    html, body, [class*="css"] {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }
     .main {
         background-color: #f4f5f7;
         padding-bottom: 80px;
@@ -218,27 +222,27 @@ if not productos:
     st.warning("Cargando productos o sin conexión con Google Sheets...")
 else:
     # -------------------------------------------------------------
-    # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
+    # 1. SECCIÓN DE CATEGORÍAS (Parte Superior) - Sin íconos
     # -------------------------------------------------------------
-    st.markdown("### 🗂️ Categorías")
+    st.markdown("### Categorías")
     cat_cols_top = st.columns(4)
     with cat_cols_top[0]:
-        if st.button("🏠 Todas", key="cat_top_todas", use_container_width=True):
+        if st.button("Todas", key="cat_top_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_top[1]:
-        if st.button("📺 Hogar", key="cat_top_hogar", use_container_width=True):
+        if st.button("Hogar", key="cat_top_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_top[2]:
-        if st.button("🌀 Lavado", key="cat_top_lavado", use_container_width=True):
+        if st.button("Lavado", key="cat_top_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_top[3]:
-        if st.button("🍳 Cocina", key="cat_top_cocina", use_container_width=True):
+        if st.button("Cocina", key="cat_top_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
@@ -332,7 +336,7 @@ else:
                     
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
-                        st.image(img_url, use_column_width=True)
+                        st.image(img_url, use_container_width=True)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -368,7 +372,7 @@ else:
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### 🛒 Carrito de Compras y Pedido")
+    st.markdown("### Carrito de Compras y Pedido")
 
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
@@ -422,28 +426,28 @@ else:
                 st.rerun()
 
     # -------------------------------------------------------------
-    # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
+    # 3. SECCIÓN DE CATEGORÍAS (Al final de la página) - Sin íconos
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### 🗂️ Categorías (Explorar más)")
+    st.markdown("### Categorías (Explorar más)")
     cat_cols_bottom = st.columns(4)
     with cat_cols_bottom[0]:
-        if st.button("🏠 Todas", key="cat_bot_todas", use_container_width=True):
+        if st.button("Todas", key="cat_bot_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_bottom[1]:
-        if st.button("📺 Hogar", key="cat_bot_hogar", use_container_width=True):
+        if st.button("Hogar", key="cat_bot_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_bottom[2]:
-        if st.button("🌀 Lavado", key="cat_bot_lavado", use_container_width=True):
+        if st.button("Lavado", key="cat_bot_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_bottom[3]:
-        if st.button("🍳 Cocina", key="cat_bot_cocina", use_container_width=True):
+        if st.button("Cocina", key="cat_bot_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
