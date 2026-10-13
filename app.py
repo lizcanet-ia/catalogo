@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS profesionales unificando la tipografía sans-serif estilo "ELECTRO+"
+# Estilos CSS con tipografías de tarjetas ampliadas un 100% más
 st.markdown("""
     <style>
     /* Aplicar tipografía unificada sans-serif moderna a toda la página */
@@ -63,7 +63,7 @@ st.markdown("""
         background-color: white;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        padding: 14px;
+        padding: 16px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         display: flex;
         flex-direction: column;
@@ -75,88 +75,88 @@ st.markdown("""
         background-color: #fee2e2;
         color: #b91c1c;
         font-weight: 700;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 20px; /* Ampliado 100% (antes 10px) */
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .badge-few {
         background-color: #fef3c7;
         color: #92400e;
         font-weight: 700;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 20px; /* Ampliado 100% (antes 10px) */
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .badge-ok {
         background-color: #d1fae5;
         color: #065f46;
         font-weight: 600;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 20px; /* Ampliado 100% (antes 10px) */
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .badge-out {
         background-color: #f3f4f6;
         color: #4b5563;
         font-weight: 600;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 20px; /* Ampliado 100% (antes 10px) */
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .product-title {
-        font-size: 13px;
+        font-size: 26px; /* Ampliado 100% (antes 13px) */
         font-weight: 500;
         color: #1f2937;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         line-height: 1.3;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        height: 34px;
+        height: 72px; /* Ajustado para el nuevo tamaño de fuente */
     }
     .product-brand {
-        font-size: 10px;
+        font-size: 20px; /* Ampliado 100% (antes 10px) */
         font-weight: 700;
         color: #7c3aed;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
     }
     .product-price {
-        font-size: 18px;
+        font-size: 36px; /* Ampliado 100% (antes 18px) */
         font-weight: 800;
         color: #111827;
-        margin: 4px 0;
+        margin: 6px 0;
     }
     .shipping-tag {
         color: #059669;
-        font-size: 11px;
+        font-size: 22px; /* Ampliado 100% (antes 11px) */
         font-weight: 600;
         background-color: #ecfdf5;
-        padding: 3px 6px;
-        border-radius: 4px;
+        padding: 6px 10px;
+        border-radius: 6px;
         display: inline-block;
-        margin-top: 6px;
-        margin-bottom: 10px;
+        margin-top: 8px;
+        margin-bottom: 12px;
     }
     .added-badge {
         color: #047857;
         background-color: #d1fae5;
-        font-size: 11px;
+        font-size: 22px; /* Ampliado 100% (antes 11px) */
         font-weight: 700;
-        padding: 4px 8px;
+        padding: 6px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         text-align: center;
     }
     </style>
@@ -336,7 +336,7 @@ else:
                     
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
-                        st.image(img_url, use_container_width=True)
+                        st.image(img_url, use_column_width=True)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -347,7 +347,7 @@ else:
                     
                     if en_carrito:
                         st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
-                        st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
+                        st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 14px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                     
                     st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
