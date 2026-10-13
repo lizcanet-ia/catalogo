@@ -176,13 +176,6 @@ st.markdown("""
         margin-bottom: 4px;
         text-align: center;
     }
-
-    /* Optimización de botones para mantener controles del carrito limpios en móvil */
-    div[data-testid="column"] button {
-        width: 100% !important;
-        padding: 4px 2px !important;
-        font-size: 13px !important;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -360,7 +353,7 @@ else:
                     
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
-                        st.image(img_url, use_container_width=True)
+                        st.image(img_url, use_column_width=True)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -392,7 +385,7 @@ else:
                     st.markdown('</div>', unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA (Responsive Flat Layout)
+    # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA (Actualización Automática)
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
@@ -414,25 +407,22 @@ else:
             for prod_id, item in list(st.session_state.carrito.items()):
                 subtotal = item["precio"] * item["cantidad"]
                 
-                # Diseño en 3 columnas limpias: Info (3), Controles Qty (2), Borrar (1)
-                c_info, c_qty, c_del = st.columns([3, 2, 1])
+                # Columnas limpias: Información del producto (2), Selector numérico de cantidad (2), Botón borrar (1)
+                c_info, c_qty, c_del = st.columns([2.5, 2, 1])
                 with c_info:
                     st.markdown(f"**{item['producto']}**<br><span style='font-size:11px; color:#7c3aed; font-weight:600;'>{item['marca']}</span><br><span style='font-size:12px; font-weight:700;'>Subtotal: ${subtotal:,.0f}</span>".replace(",", "."), unsafe_allow_html=True)
                 with c_qty:
-                    sub_m, sub_n, sub_p = st.columns([1, 1, 1])
-                    with sub_m:
-                        if st.button("➖", key=f"foot_minus_{prod_id}", use_container_width=True):
-                            if item["cantidad"] > 1:
-                                item["cantidad"] -= 1
-                            else:
-                                del st.session_state.carrito[prod_id]
-                            st.rerun()
-                    with sub_n:
-                        st.markdown(f"<div style='text-align: center; font-weight: bold; font-size: 14px; padding-top: 4px;'>{item['cantidad']}</div>", unsafe_allow_html=True)
-                    with sub_p:
-                        if st.button("➕", key=f"foot_plus_{prod_id}", use_container_width=True):
-                            item["cantidad"] += 1
-                            st.rerun()
+                    nueva_cantidad = st.number_input(
+                        "Cant",
+                        min_value=1,
+                        max_value=99,
+                        value=item["cantidad"],
+                        key=f"qty_input_{prod_id}",
+                        label_visibility="collapsed"
+                    )
+                    if nueva_cantidad != item["cantidad"]:
+                        item["cantidad"] = nueva_cantidad
+                        st.rerun()
                 with c_del:
                     if st.button("🗑️", key=f"foot_del_{prod_id}", use_container_width=True):
                         del st.session_state.carrito[prod_id]
