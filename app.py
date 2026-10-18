@@ -383,15 +383,6 @@ else:
                 en_carrito = prod_id in st.session_state.carrito
                 qty_en_carrito = st.session_state.carrito[prod_id]["cantidad"] if en_carrito else 0
 
-                if stock <= 0:
-                    badge_html = '<span class="badge-out">Sin stock</span>'
-                elif stock == 1:
-                    badge_html = '<span class="badge-last">¡ÚLTIMA UNIDAD! 🔥</span>'
-                elif stock < 3:
-                    badge_html = '<span class="badge-few">¡ÚLTIMAS UNIDADES! 🔥</span>'
-                else:
-                    badge_html = '<span class="badge-ok">Disponible ✓</span>'
-
                 precio_num = prod.get('precioVenta', 0)
                 precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
@@ -407,27 +398,66 @@ else:
                     st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
-                    st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
-                    
-                    if en_carrito:
-                        st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
-                        st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
-                    
-                    st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
-                    if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
-                        if prod_id in st.session_state.carrito:
-                            st.session_state.carrito[prod_id]["cantidad"] += 1
-                        else:
-                            st.session_state.carrito[prod_id] = {
-                                "producto": prod.get("producto"),
-                                "marca": prod.get("marca"),
-                                "precio": precio_num,
-                                "cantidad": 1
-                            }
+                    # GESTIÓN DE STOCK Y BOTONES / FORMULARIOS
+                    if stock <= 0:
+                        badge_html = '<span class="badge-out">Sin stock</span>'
+                        st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="shipping-tag" style="background-color:#fef2f2; color:#b91c1c;">🚫 Producto agotado</div>', unsafe_allow_html=True)
                         
-                        st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
-                        st.rerun()
+                        # Formulario desplegable para "Avísame cuando ingrese"
+                        with st.expander("🔔 Avísame cuando ingrese"):
+                            with st.form(key=f"form_stock_{idx}_{prod_id}"):
+                                st.markdown(f"<p style='font-size:11px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
+                                nombre_lead = st.text_input("Tu Nombre", key=f"lead_nombre_{idx}_{prod_id}")
+                                tel_lead = st.text_input("Tu Teléfono / WhatsApp", key=f"lead_tel_{idx}_{prod_id}")
+                                
+                                enviar_lead = st.form_submit_button("📤 Registrarme", use_container_width=True)
+                                if enviar_lead:
+                                    if nombre_lead.strip() and tel_lead.strip():
+                                        try:
+                                            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+                                            supabase.table("stock_leads").insert({
+                                                "client_id": CLIENTE_ACTUAL,
+                                                "cod": prod_id,
+                                                "producto": prod.get("producto"),
+                                                "nombre": nombre_lead.strip(),
+                                                "telefono": tel_lead.strip()
+                                            }).execute()
+                                            st.success("¡Listo! Te avisaremos cuando ingrese.")
+                                        except Exception as e:
+                                            st.error("Hubo un error al registrar tus datos.")
+                                    else:
+                                        st.warning("Por favor completa ambos campos.")
+                    else:
+                        if stock == 1:
+                            badge_html = '<span class="badge-last">¡ÚLTIMA UNIDAD! 🔥</span>'
+                        elif stock < 3:
+                            badge_html = '<span class="badge-few">¡ÚLTIMAS UNIDADES! 🔥</span>'
+                        else:
+                            badge_html = '<span class="badge-ok">Disponible ✓</span>'
+                        
+                        st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                        
+                        if en_carrito:
+                            st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
+                            st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
+                        
+                        st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
+
+                        if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
+                            if prod_id in st.session_state.carrito:
+                                st.session_state.carrito[prod_id]["cantidad"] += 1
+                            else:
+                                st.session_state.carrito[prod_id] = {
+                                    "producto": prod.get("producto"),
+                                    "marca": prod.get("marca"),
+                                    "precio": precio_num,
+                                    "cantidad": 1
+                                }
+                            
+                            st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
+                            st.rerun()
                     
                     st.markdown('</div>', unsafe_allow_html=True)
 
