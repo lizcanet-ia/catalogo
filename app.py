@@ -294,22 +294,18 @@ else:
     with cat_cols_top[0]:
         if st.button("Todas", key="cat_top_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_top[1]:
         if st.button("Hogar", key="cat_top_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_top[2]:
         if st.button("Lavado", key="cat_top_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_top[3]:
         if st.button("Cocina", key="cat_top_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
 
     st.markdown("---")
@@ -528,22 +524,18 @@ else:
     with cat_cols_bottom[0]:
         if st.button("Todas", key="cat_bot_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_bottom[1]:
         if st.button("Hogar", key="cat_bot_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_bottom[2]:
         if st.button("Lavado", key="cat_bot_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
     with cat_cols_bottom[3]:
         if st.button("Cocina", key="cat_bot_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
-            st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
 
     # Botón Volver arriba ubicado exactamente donde marcaste con el recuadro rojo
