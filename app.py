@@ -345,24 +345,28 @@ else:
         if st.button("Todas", key="cat_top_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
     with cat_cols_top[1]:
         if st.button("Hogar", key="cat_top_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
     with cat_cols_top[2]:
         if st.button("Lavado", key="cat_top_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
     with cat_cols_top[3]:
         if st.button("Cocina", key="cat_top_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
 
@@ -370,13 +374,13 @@ else:
 
     st.markdown('<div id="catalogo-productos"></div>', unsafe_allow_html=True)
 
-    # Buscador y Marcas
+    # Buscador y Marcas (con key="select_marca")
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
         busqueda = st.text_input("🔍 Buscar...", placeholder="Encontrá lo que querés", key="input_busqueda")
     with col_marca:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
-        marca_seleccionada = st.selectbox("Marca", marcas)
+        marca_seleccionada = st.selectbox("Marca", marcas, key="select_marca")
 
     # Filtrado
     productos_filtrados = []
@@ -595,24 +599,28 @@ else:
         if st.button("Todas", key="cat_bot_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
     with cat_cols_bottom[1]:
         if st.button("Hogar", key="cat_bot_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
     with cat_cols_bottom[2]:
         if st.button("Lavado", key="cat_bot_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
     with cat_cols_bottom[3]:
         if st.button("Cocina", key="cat_bot_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
             st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
             st.query_params.clear()
             st.rerun()
 
