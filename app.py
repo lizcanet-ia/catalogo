@@ -37,7 +37,7 @@ st.markdown("""
         border-radius: 3px;
     }
     
-    /* Logotipo ELECTRO+ ampliado un 15% (28px) */
+    /* Logotipo ELECTRO+ ampliado */
     .brand-logo {
         font-size: 28px;
         font-weight: 900;
@@ -50,7 +50,7 @@ st.markdown("""
         color: #7c3aed;
     }
     
-    /* Enlace cliqueable para el contador de carrito ampliado un 25% (16px) */
+    /* Enlace cliqueable para el contador de carrito */
     .cart-link-badge {
         display: block;
         text-align: right;
@@ -197,6 +197,50 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 4px;
         text-align: center;
+    }
+
+    /* -------------------------------------------------------------
+       CUSTOMIZACIÓN RESALTADA DEL BOTÓN FULLSCREEN DE IMÁGENES
+    ------------------------------------------------------------- */
+    /* Hacer visible siempre el contenedor del botón de fullscreen */
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Estilo del botón: más grande, blanco, con borde y sombra vistosa */
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] button {
+        background-color: #ffffff !important;
+        border: 1px solid #7c3aed !important;
+        border-radius: 20px !important;
+        padding: 6px 14px !important;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] button:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 6px 14px rgba(124, 58, 237, 0.35) !important;
+    }
+
+    /* Agrandar el icono nativo dentro del botón */
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] svg {
+        width: 18px !important;
+        height: 18px !important;
+        color: #7c3aed !important;
+    }
+
+    /* Agregar el texto "Amplia foto" al lado del icono */
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] button::after {
+        content: "Amplia foto" !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #7c3aed !important;
+        white-space: nowrap !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -383,7 +427,7 @@ else:
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
-                    # IMAGEN CON FUNCIÓN FULLSCREEN NATIVA DE STREAMLIT (SIN BOTONES EXTRA)
+                    # IMAGEN CON FULLSCREEN PERSONALIZADO
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
                         st.image(img_url, use_column_width=True)
