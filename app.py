@@ -205,15 +205,12 @@ st.markdown("""
 SUPABASE_URL = "https://fyakcgfnhrsiohistsac.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YWtjZ2ZuaHJzaW9oaXN0c2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDU1MzYsImV4cCI6MjEwNzQyMTUzNn0.NSguf7dQUss3LOz_hhpFlEr20YfvjxEbVATg4OX01sM"
 
-# Identificador único de este cliente en la base de datos centralizada
 CLIENTE_ACTUAL = "electro_plus"
 
 @st.cache_data(ttl=10)
 def cargar_datos():
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        
-        # Consultamos filtrando estrictamente por el client_id y productos activos
         response = (
             supabase.table("productos")
             .select("*")
@@ -221,7 +218,6 @@ def cargar_datos():
             .eq("activo", True)
             .execute()
         )
-        
         data = response.data
         if data:
             productos = []
@@ -240,6 +236,16 @@ def cargar_datos():
         st.error(f"Error al conectar con Supabase: {e}")
         return []
 
+# MODAL (LIGHTBOX) NATIVO PARA AMPLIAR IMAGEN
+@st.dialog("🔍 Vista previa de imagen")
+def mostrar_imagen_grande(producto, marca, imagen_url, precio):
+    st.markdown(f"**{marca}** - {producto}")
+    st.markdown(f"**Precio:** $ {precio:,.0f}".replace(",", "."))
+    if imagen_url:
+        st.image(imagen_url, use_column_width=True)
+    else:
+        st.info("Imagen no disponible.")
+
 # Inicializar estados
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
@@ -247,13 +253,13 @@ if "carrito" not in st.session_state:
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
-# Barra superior purpura y Ancla para el inicio de la página
+# Barra superior purpura y Ancla para el inicio
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
 productos = cargar_datos()
 
-# Encabezado E-commerce (ELECTRO+ y contador de carrito redireccionable)
+# Encabezado E-commerce
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
 total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
@@ -314,10 +320,9 @@ else:
 
     st.markdown("---")
 
-    # Ancla invisible para redirección
     st.markdown('<div id="catalogo-productos"></div>', unsafe_allow_html=True)
 
-    # Buscador Global y Filtro de marcas (Asignamos key="input_busqueda")
+    # Buscador y Marcas
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
         busqueda = st.text_input("🔍 Buscar...", placeholder="Encontrá lo que querés", key="input_busqueda")
@@ -325,9 +330,7 @@ else:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
         marca_seleccionada = st.selectbox("Marca", marcas)
 
-    # -------------------------------------------------------------
-    # LÓGICA DE FILTRADO GLOBAL E INTELIGENTE
-    # -------------------------------------------------------------
+    # Filtrado
     productos_filtrados = []
     keywords_hogar = ["tv", "ventilador", "aire acondicionado"]
     keywords_lavado = ["lavarropas", "aspiradora"]
@@ -390,9 +393,12 @@ else:
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
+                    # IMAGEN CON BOTÓN DE LIGHTBOX (AMPLIAR)
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
                         st.image(img_url, use_column_width=True)
+                        if st.button("🔍 Ver imagen grande", key=f"zoom_{idx}_{prod_id}", use_container_width=True):
+                            mostrar_imagen_grande(prod.get("producto"), prod.get("marca"), img_url, precio_num)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -400,13 +406,17 @@ else:
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
 
+                    # BOTÓN DE COMPARTIR POR WHATSAPP (NUEVO)
+                    wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}! ⚡"
+                    wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
+                    st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:bold; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir producto</a>', unsafe_allow_html=True)
+
                     # GESTIÓN DE STOCK Y BOTONES / FORMULARIOS
                     if stock <= 0:
                         badge_html = '<span class="badge-out">Sin stock</span>'
                         st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                         st.markdown('<div class="shipping-tag" style="background-color:#fef2f2; color:#b91c1c;">🚫 Producto agotado</div>', unsafe_allow_html=True)
                         
-                        # Formulario desplegable para "Avísame cuando ingrese"
                         with st.expander("🔔 Avísame cuando ingrese"):
                             with st.form(key=f"form_stock_{idx}_{prod_id}"):
                                 st.markdown(f"<p style='font-size:11px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
@@ -463,7 +473,7 @@ else:
                     st.markdown('</div>', unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA (Actualización Automática)
+    # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
@@ -546,7 +556,7 @@ else:
             st.session_state.input_busqueda = ""
             st.rerun()
 
-    # Botón Volver arriba ubicado exactamente donde marcaste con el recuadro rojo
+    # Botón Volver arriba
     st.markdown(
         """
         <div style="text-align: center; margin-top: 25px; margin-bottom: 20px;">
