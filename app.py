@@ -202,13 +202,11 @@ st.markdown("""
     /* -------------------------------------------------------------
        CUSTOMIZACIÓN RESALTADA DEL BOTÓN FULLSCREEN DE IMÁGENES
     ------------------------------------------------------------- */
-    /* Hacer visible siempre el contenedor del botón de fullscreen */
     div[data-testid="stImage"] [data-testid="stElementActionButton"] {
         opacity: 1 !important;
         visibility: visible !important;
     }
 
-    /* Estilo del botón: más grande, blanco, con borde y sombra vistosa */
     div[data-testid="stImage"] [data-testid="stElementActionButton"] button {
         background-color: #ffffff !important;
         border: 1px solid #7c3aed !important;
@@ -227,14 +225,12 @@ st.markdown("""
         box-shadow: 0 6px 14px rgba(124, 58, 237, 0.35) !important;
     }
 
-    /* Agrandar el icono nativo dentro del botón */
     div[data-testid="stImage"] [data-testid="stElementActionButton"] svg {
         width: 18px !important;
         height: 18px !important;
         color: #7c3aed !important;
     }
 
-    /* Agregar el texto "Amplia foto" al lado del icono */
     div[data-testid="stImage"] [data-testid="stElementActionButton"] button::after {
         content: "Amplia foto" !important;
         font-size: 12px !important;
@@ -250,6 +246,7 @@ SUPABASE_URL = "https://fyakcgfnhrsiohistsac.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YWtjZ2ZuaHJzaW9oaXN0c2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDU1MzYsImV4cCI6MjEwNzQyMTUzNn0.NSguf7dQUss3LOz_hhpFlEr20YfvjxEbVATg4OX01sM"
 
 CLIENTE_ACTUAL = "electro_plus"
+URL_BASE_APP = "https://catalogo-lizia.streamlit.app"
 
 @st.cache_data(ttl=10)
 def cargar_datos():
@@ -286,6 +283,10 @@ if "carrito" not in st.session_state:
 
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
+
+# Detectar si la URL trae un producto específico (ej: ?prod=AR-ELEC-0001)
+query_params = st.query_params
+prod_en_url = query_params.get("prod", "")
 
 # Barra superior purpura y Ancla para el inicio
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
@@ -335,21 +336,25 @@ else:
         if st.button("Todas", key="cat_top_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
     with cat_cols_top[1]:
         if st.button("Hogar", key="cat_top_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
     with cat_cols_top[2]:
         if st.button("Lavado", key="cat_top_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
     with cat_cols_top[3]:
         if st.button("Cocina", key="cat_top_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
 
     st.markdown("---")
@@ -374,41 +379,51 @@ else:
 
     for p in productos:
         nombre_prod = p.get("producto", "").lower()
+        prod_id = str(p.get("cod", ""))
         
-        if query:
-            match_categoria = True
+        # Si la URL trae un producto específico, filtramos estrictamente por él
+        if prod_en_url:
+            match = (prod_id.lower() == prod_en_url.lower())
         else:
-            match_categoria = True
-            cat = st.session_state.categoria_activa
-            if cat == "Hogar":
-                match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
-            elif cat == "Lavado":
-                match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
-            elif cat == "Cocina":
-                match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
+            if query:
+                match_categoria = True
+            else:
+                match_categoria = True
+                cat = st.session_state.categoria_activa
+                if cat == "Hogar":
+                    match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
+                elif cat == "Lavado":
+                    match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
+                elif cat == "Cocina":
+                    match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
 
-        match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
-        
-        match_query = (
-            not query or
-            query in nombre_prod or
-            query in p.get("marca", "").lower() or
-            query in str(p.get("cod", "")).lower()
-        )
+            match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
+            
+            match_query = (
+                not query or
+                query in nombre_prod or
+                query in p.get("marca", "").lower() or
+                query in prod_id.lower()
+            )
+            match = match_categoria and match_marca and match_query
 
-        if match_categoria and match_marca and match_query:
+        if match:
             productos_filtrados.append(p)
 
+    if prod_en_url and productos_filtrados:
+        st.info(f"✨ Viendo producto compartido. [Ver todo el catálogo]({URL_BASE_APP})")
+
     if not productos_filtrados:
-        if query:
-            st.warning(f"🔍 No encontramos **'{busqueda}'** en nuestro catálogo.")
-            wa_msg_ausente = f"Hola, estoy buscando '{busqueda}' y no lo encontré en el catálogo. ¿Me podrán confirmar si lo tienen disponible o se puede conseguir?"
-            wa_url_ausente = f"https://wa.me/5491165295937?text={urllib.parse.quote(wa_msg_ausente)}"
-            st.markdown(f'<a href="{wa_url_ausente}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:12px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold; margin-top:10px; margin-bottom:15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">💬 Consultar por WhatsApp si está disponible</a>', unsafe_allow_html=True)
+        if query or prod_en_url:
+            st.warning("🔍 No encontramos el producto solicitado.")
+            if prod_en_url:
+                if st.button("Ver catálogo completo"):
+                    st.query_params.clear()
+                    st.rerun()
         else:
             st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}'.")
     else:
-        info_texto = f"Mostrando {len(productos_filtrados)} artículos" if query else f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)"
+        info_texto = f"Mostrando {len(productos_filtrados)} artículos" if query or prod_en_url else f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)"
         st.write(info_texto)
         
         cols = st.columns(2)
@@ -427,7 +442,7 @@ else:
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
-                    # IMAGEN CON FULLSCREEN PERSONALIZADO
+                    # Imagen
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
                         st.image(img_url, use_column_width=True)
@@ -438,12 +453,13 @@ else:
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
 
-                    # BOTÓN DE COMPARTIR POR WHATSAPP
-                    wa_share_msg = f"Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!"
+                    # Botón de Compartir por WhatsApp con enlace directo al producto
+                    link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
+                    wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                     wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
                     st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:bold; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
-                    # GESTIÓN DE STOCK Y BOTONES / FORMULARIOS
+                    # Gestión de stock y carrito
                     if stock <= 0:
                         badge_html = '<span class="badge-out">Sin stock</span>'
                         st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
@@ -571,21 +587,25 @@ else:
         if st.button("Todas", key="cat_bot_todas", use_container_width=True):
             st.session_state.categoria_activa = "Todas"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
     with cat_cols_bottom[1]:
         if st.button("Hogar", key="cat_bot_hogar", use_container_width=True):
             st.session_state.categoria_activa = "Hogar"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
     with cat_cols_bottom[2]:
         if st.button("Lavado", key="cat_bot_lavado", use_container_width=True):
             st.session_state.categoria_activa = "Lavado"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
     with cat_cols_bottom[3]:
         if st.button("Cocina", key="cat_bot_cocina", use_container_width=True):
             st.session_state.categoria_activa = "Cocina"
             st.session_state.input_busqueda = ""
+            st.query_params.clear()
             st.rerun()
 
     # Botón Volver arriba
