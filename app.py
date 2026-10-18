@@ -236,19 +236,6 @@ def cargar_datos():
         st.error(f"Error al conectar con Supabase: {e}")
         return []
 
-# MODAL (LIGHTBOX) AMPLIADO PARA OCUPAR TODO EL ANCHO
-@st.dialog("🔍 Vista previa de imagen")
-def mostrar_imagen_grande(producto, marca, imagen_url, precio):
-    st.markdown(f"**{marca}** - {producto}")
-    st.markdown(f"**Precio:** $ {precio:,.0f}".replace(",", "."))
-    if imagen_url:
-        st.markdown(
-            f'<div style="text-align: center; margin-top: 10px;"><img src="{imagen_url}" style="width: 100%; border-radius: 8px;"></div>',
-            unsafe_allow_html=True
-        )
-    else:
-        st.info("Imagen no disponible.")
-
 # Inicializar estados
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
@@ -396,12 +383,10 @@ else:
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
-                    # IMAGEN CON BOTÓN DE LIGHTBOX (AMPLÍA LA IMAGEN)
+                    # IMAGEN CON FUNCIÓN FULLSCREEN NATIVA DE STREAMLIT (SIN BOTONES EXTRA)
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
                         st.image(img_url, use_column_width=True)
-                        if st.button("🔍 Amplía la imagen", key=f"zoom_{idx}_{prod_id}", use_container_width=True):
-                            mostrar_imagen_grande(prod.get("producto"), prod.get("marca"), img_url, precio_num)
                     else:
                         st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -409,7 +394,7 @@ else:
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
 
-                    # BOTÓN DE COMPARTIR POR WHATSAPP (SIN CARACTERES EXTRAÑOS)
+                    # BOTÓN DE COMPARTIR POR WHATSAPP
                     wa_share_msg = f"Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!"
                     wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
                     st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:bold; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
