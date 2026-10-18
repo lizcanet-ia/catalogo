@@ -247,8 +247,9 @@ if "carrito" not in st.session_state:
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
-# Barra superior purpura
+# Barra superior purpura y Ancla para el inicio de la página
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
+st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
 productos = cargar_datos()
 
@@ -544,3 +545,15 @@ else:
             st.session_state.categoria_activa = "Cocina"
             st.markdown('<meta http-equiv="refresh" content="0;url=#catalogo-productos">', unsafe_allow_html=True)
             st.rerun()
+
+    # Botón Volver arriba ubicado exactamente donde marcaste con el recuadro rojo
+    st.markdown(
+        """
+        <div style="text-align: center; margin-top: 25px; margin-bottom: 20px;">
+            <a href="#top-inicio" style="display: inline-block; background-color: #ffffff; color: #374151; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                ⬆️ Volver arriba
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
