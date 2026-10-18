@@ -1,11 +1,11 @@
 import streamlit as st
-import requests
+from supabase import create_client
 import urllib.parse
 
 # Configuración de la página optimizada para móviles y PC
 st.set_page_config(
     page_title="ELECTRO+",
-    page_icon="⚡",
+    page_icon="🛒",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
@@ -33,7 +33,7 @@ st.markdown("""
         height: 6px;
         width: 100%;
         margin-top: 6px;
-        margin-bottom: 32px; /* Mayor separación entre la barra y el logo */
+        margin-bottom: 32px;
         border-radius: 3px;
     }
     
@@ -201,18 +201,43 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# URL de tu Apps Script API JSON
-API_URL = "https://script.google.com/macros/s/AKfycbyIQqZPk3e_U17GjuO2LI99KS_wBWV0-91D_beFxaWOb0fWxLmS2gQEpBRwJaE5Y3E9aA/exec"
+# CONFIGURACIÓN DE SUPABASE Y CLIENTE
+SUPABASE_URL = "https://fyakcgfnhrsiohistsac.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YWtjZ2ZuaHJzaW9oaXN0c2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDU1MzYsImV4cCI6MjEwNzQyMTUzNn0.NSguf7dQUss3LOz_hhpFlEr20YfvjxEbVATg4OX01sM"
+
+# Identificador único de este cliente en la base de datos centralizada
+CLIENTE_ACTUAL = "electro_plus"
 
 @st.cache_data(ttl=10)
 def cargar_datos():
     try:
-        response = requests.get(API_URL)
-        result = response.json()
-        if result.get("status") == "success":
-            return result.get("data", [])
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        
+        # Consultamos filtrando estrictamente por el client_id y productos activos
+        response = (
+            supabase.table("productos")
+            .select("*")
+            .eq("client_id", CLIENTE_ACTUAL)
+            .eq("activo", True)
+            .execute()
+        )
+        
+        data = response.data
+        if data:
+            productos = []
+            for p in data:
+                productos.append({
+                    "cod": p.get("cod"),
+                    "producto": p.get("producto"),
+                    "marca": p.get("marca"),
+                    "precioVenta": float(p.get("precio_venta", 0)),
+                    "stock": int(p.get("stock", 0)),
+                    "imagenUrl": p.get("imagen_url", "")
+                })
+            return productos
         return []
     except Exception as e:
+        st.error(f"Error al conectar con Supabase: {e}")
         return []
 
 # Inicializar estados
@@ -258,7 +283,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if not productos:
-    st.warning("Cargando productos o sin conexión con Google Sheets...")
+    st.warning("Cargando productos o sin conexión con Supabase...")
 else:
     # -------------------------------------------------------------
     # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
