@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS avanzados para ampliar el ancho de la página y reducir márgenes
+# Estilos CSS avanzados para ampliar el ancho de la página y aumentar el logo un 150%
 st.markdown("""
     <style>
     /* Ampliar el contenedor principal para que abarque más la pantalla */
@@ -46,9 +46,9 @@ st.markdown("""
         border-radius: 3px;
     }
     
-    /* Logotipo ELECTRO+ ampliado */
+    /* Logotipo ELECTRO+ ampliado un 150% (42px) */
     .brand-logo {
-        font-size: 28px;
+        font-size: 42px;
         font-weight: 900;
         color: #111827;
         letter-spacing: -0.5px;
@@ -510,7 +510,7 @@ else:
                             st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
                             st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                         
-                        st.markdown('<div class="shipping-tag">📦 ENVÍOS A TODO EL PAÍS </div>', unsafe_allow_html=True)
+                        st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
 
                         if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                             if prod_id in st.session_state.carrito:
