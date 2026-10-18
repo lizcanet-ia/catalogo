@@ -455,7 +455,7 @@ else:
 
                     # Botón de Compartir por WhatsApp con enlace directo al producto
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
-                    wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
+                    wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n Ver producto acá: {link_directo_producto}"
                     wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
                     st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:bold; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
@@ -502,7 +502,7 @@ else:
                             st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
                             st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                         
-                        st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="shipping-tag">⚡ Envío a toda Argentina </div>', unsafe_allow_html=True)
 
                         if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                             if prod_id in st.session_state.carrito:
