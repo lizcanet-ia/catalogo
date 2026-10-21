@@ -156,17 +156,17 @@ st.markdown("""
         margin-bottom: 8px;
     }
 
-    /* Estilo para la etiqueta de descuento */
+    /* Estilo para la etiqueta de descuento alineada al precio */
     .badge-discount {
         background-color: #ef4444;
         color: #ffffff;
         font-weight: 800;
-        font-size: 11px;
-        padding: 4px 10px;
+        font-size: 12px;
+        padding: 3px 8px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 8px;
-        margin-left: 6px;
+        margin-left: 8px;
+        vertical-align: middle;
     }
 
     .old-price {
@@ -201,14 +201,16 @@ st.markdown("""
         margin-bottom: 4px;
     }
     
-    /* Precio Principal Más Grande */
+    /* Precio Principal con soporte para elementos flexibles */
     .product-price {
         font-size: 22px;
         font-weight: 900;
         color: #111827;
         margin: 6px 0 10px 0;
         display: flex;
-        align-items: baseline;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
     }
     
     /* Etiqueta de Envío a toda Argentina */
@@ -474,7 +476,7 @@ else:
                 precio_num = prod.get('precioVenta', 0)
                 precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
-                # --- LÓGICA DE PRECIO ANTERIOR Y DESCUENTO ---
+                # --- LÓGICA DE PRECIO ANTERIOR Y DESCUENTO EN LÍNEA ---
                 precio_ant = prod.get("precioAnterior")
                 old_price_html = ""
                 discount_badge_html = ""
@@ -485,7 +487,7 @@ else:
                     
                     pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
                     discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
-                # ---------------------------------------------
+                # ------------------------------------------------------
                 
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
@@ -500,8 +502,8 @@ else:
                     st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     
-                    # Render del Precio actual + Precio Anterior + Badge de descuento
-                    st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span></div>', unsafe_allow_html=True)
+                    # Render del Precio anterior + Precio actual + Badge de descuento AL LADO
+                    st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
                     # Botón de Compartir por WhatsApp
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
@@ -546,13 +548,12 @@ else:
                         else:
                             badge_html = '<span class="badge-ok">Disponible ✓</span>'
                         
-                        st.markdown(f'<div>{badge_html}{discount_badge_html}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                         
                         if en_carrito:
                             st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
                             st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 13px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                         
-                        # TEXTO ACTUALIZADO
                         st.markdown('<div class="shipping-tag">📦 Envío a toda Argentina</div>', unsafe_allow_html=True)
 
                         if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
