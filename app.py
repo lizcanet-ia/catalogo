@@ -2,7 +2,7 @@ import streamlit as st
 from supabase import create_client
 import urllib.parse
 
-# Configuración de la página en modo "wide" para aprovechar todo el ancho de la pantalla
+# Configuración de la página en modo "wide"
 st.set_page_config(
     page_title="ELECTRO+",
     page_icon="🛒",
@@ -10,10 +10,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS avanzados con fuentes y elementos ampliados
+# Estilos CSS avanzados con caja de promociones estilo e-commerce
 st.markdown("""
     <style>
-    /* Ampliar el contenedor principal para que abarque más la pantalla */
     .block-container {
         max-width: 95% !important;
         padding-top: 2rem !important;
@@ -22,7 +21,6 @@ st.markdown("""
         padding-right: 2rem !important;
     }
 
-    /* Tipografía unificada sans-serif moderna */
     html, body, [class*="css"] {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }
@@ -36,7 +34,6 @@ st.markdown("""
         scroll-behavior: smooth;
     }
     
-    /* Barra superior violeta con mayor separación */
     .top-bar {
         background-color: #7c3aed;
         height: 6px;
@@ -46,7 +43,6 @@ st.markdown("""
         border-radius: 3px;
     }
     
-    /* Logotipo ELECTRO+ ampliado */
     .brand-logo {
         font-size: 42px;
         font-weight: 900;
@@ -59,7 +55,6 @@ st.markdown("""
         color: #7c3aed;
     }
     
-    /* Enlace cliqueable para el contador de carrito */
     .cart-link-badge {
         display: block;
         text-align: right;
@@ -98,7 +93,6 @@ st.markdown("""
         gap: 4px;
     }
     
-    /* Tarjeta de producto ampliada */
     .product-card {
         background-color: white;
         border: 1px solid #e5e7eb;
@@ -156,7 +150,6 @@ st.markdown("""
         margin-bottom: 8px;
     }
 
-    /* Estilo para la etiqueta de descuento alineada al precio */
     .badge-discount {
         background-color: #ef4444;
         color: #ffffff;
@@ -177,7 +170,6 @@ st.markdown("""
         margin-right: 8px;
     }
     
-    /* Descripción / Título del Producto Más Grande */
     .product-title {
         font-size: 16px;
         font-weight: 600;
@@ -191,7 +183,6 @@ st.markdown("""
         min-height: 44px;
     }
     
-    /* Marca Más Grande */
     .product-brand {
         font-size: 12px;
         font-weight: 800;
@@ -201,7 +192,6 @@ st.markdown("""
         margin-bottom: 4px;
     }
     
-    /* Precio Principal con soporte para elementos flexibles */
     .product-price {
         font-size: 22px;
         font-weight: 900;
@@ -212,18 +202,40 @@ st.markdown("""
         flex-wrap: wrap;
         gap: 4px;
     }
-    
-    /* Etiqueta de Envío a toda Argentina */
-    .shipping-tag {
-        color: #059669;
+
+    /* Caja de Promociones inspirada en Frávega */
+    .promo-box {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 10px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .promo-transfer {
+        background-color: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        padding: 8px;
+        border-radius: 6px;
         font-size: 12px;
         font-weight: 700;
-        background-color: #ecfdf5;
-        padding: 5px 10px;
-        border-radius: 6px;
-        display: inline-block;
-        margin-top: 6px;
-        margin-bottom: 12px;
+    }
+
+    .promo-item {
+        font-size: 12px;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .promo-item strong {
+        color: #111827;
     }
     
     .added-badge {
@@ -277,7 +289,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# CONFIGURACIÓN DE SUPABASE Y CLIENTE
 SUPABASE_URL = "https://fyakcgfnhrsiohistsac.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YWtjZ2ZuaHJzaW9oaXN0c2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDU1MzYsImV4cCI6MjEwNzQyMTUzNn0.NSguf7dQUss3LOz_hhpFlEr20YfvjxEbVATg4OX01sM"
 
@@ -314,24 +325,20 @@ def cargar_datos():
         st.error(f"Error al conectar con Supabase: {e}")
         return []
 
-# Inicializar estados
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
 
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
-# Detectar si la URL trae un producto específico
 query_params = st.query_params
 prod_en_url = query_params.get("prod", "")
 
-# Barra superior purpura y Ancla para el inicio
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
 productos = cargar_datos()
 
-# Encabezado E-commerce y cálculo de Ahorro Acumulado
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
 total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
 
@@ -350,7 +357,6 @@ with col_cart:
 
 st.markdown("")
 
-# Barra de beneficios institucional
 st.markdown("""
     <div class="benefits-bar">
         <div class="benefit-item">
@@ -371,9 +377,6 @@ st.markdown("""
 if not productos:
     st.warning("Cargando productos o sin conexión con Supabase...")
 else:
-    # -------------------------------------------------------------
-    # 1. SECCIÓN DE CATEGORÍAS (Parte Superior)
-    # -------------------------------------------------------------
     st.markdown("### Categorías")
     cat_cols_top = st.columns(4)
     with cat_cols_top[0]:
@@ -409,7 +412,6 @@ else:
 
     st.markdown('<div id="catalogo-productos"></div>', unsafe_allow_html=True)
 
-    # Buscador y Marcas
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
         busqueda = st.text_input("🔍 Buscar...", placeholder="Encontrá lo que querés", key="input_busqueda")
@@ -417,7 +419,6 @@ else:
         marcas = ["TODAS"] + sorted(list(set(p.get("marca", "").strip() for p in productos if p.get("marca"))))
         marca_seleccionada = st.selectbox("Marca", marcas, key="select_marca")
 
-    # Filtrado
     productos_filtrados = []
     keywords_hogar = ["tv", "ventilador", "aire acondicionado"]
     keywords_lavado = ["lavarropas", "aspiradora"]
@@ -483,7 +484,13 @@ else:
                 precio_num = prod.get('precioVenta', 0)
                 precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
-                # --- LÓGICA DE PRECIO ANTERIOR Y DESCUENTO EN LÍNEA ---
+                # CÁLCULOS DE PROMOCIONES BANCARIAS
+                precio_transferencia = precio_num * 0.80
+                precio_transf_str = f"$ {precio_transferencia:,.0f}".replace(",", ".")
+                
+                cuota_6 = precio_num / 6
+                cuota_6_str = f"$ {cuota_6:,.0f}".replace(",", ".")
+                
                 precio_ant = prod.get("precioAnterior")
                 old_price_html = ""
                 discount_badge_html = ""
@@ -494,12 +501,10 @@ else:
                     
                     pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
                     discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
-                # ------------------------------------------------------
                 
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
-                    # Imagen
                     img_url = prod.get("imagenUrl", "")
                     if img_url:
                         st.image(img_url, use_column_width=True)
@@ -509,20 +514,35 @@ else:
                     st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
                     
-                    # Render del Precio anterior + Precio actual + Badge de descuento AL LADO
                     st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
-                    # Botón de Compartir por WhatsApp
+                    # CAJA DE BENEFICIOS Y PROMOCIONES (ESTILO FRÁVEGA)
+                    st.markdown(f"""
+                        <div class="promo-box">
+                            <div class="promo-transfer">
+                                🏦 <strong>20% OFF</strong> pagando por Transferencia Bancaria<br>
+                                <span style="font-size: 13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span>
+                            </div>
+                            <div class="promo-item">
+                                💳 <strong>6 cuotas sin interés</strong> de <strong>{cuota_6_str}</strong> pagando con VISA
+                            </div>
+                            <div class="promo-item">
+                                📦 <strong>Envío GRATIS</strong> a Capital Federal
+                            </div>
+                            <div class="promo-item">
+                                🏪 Disponible para <strong>retiro en sucursal</strong>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
                     wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                     wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
                     st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
-                    # Gestión de stock y carrito
                     if stock <= 0:
                         badge_html = '<span class="badge-out">Sin stock</span>'
                         st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="shipping-tag" style="background-color:#fef2f2; color:#b91c1c;">🚫 Producto agotado</div>', unsafe_allow_html=True)
                         
                         with st.expander("🔔 Avísame cuando ingrese"):
                             with st.form(key=f"form_stock_{idx}_{prod_id}"):
@@ -560,8 +580,6 @@ else:
                         if en_carrito:
                             st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
                             st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 13px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
-                        
-                        st.markdown('<div class="shipping-tag">📦 Envío a toda Argentina</div>', unsafe_allow_html=True)
 
                         if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                             if prod_id in st.session_state.carrito:
@@ -590,6 +608,9 @@ else:
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
     else:
+        total_transferencia = total_general * 0.80
+        total_transf_str = f"$ {total_transferencia:,.0f}".replace(",", ".")
+
         st.markdown(f"""
             <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <span style="font-weight: bold; font-size: 15px;">🛒 Total de Artículos: {total_items}</span>
@@ -597,12 +618,11 @@ else:
             </div>
         """.replace(",", "."), unsafe_allow_html=True)
 
-        # BANNER DE AHORRO SI EXISTE DESCUENTO ACUMULADO
         if total_ahorro > 0:
             ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
             st.markdown(f"""
                 <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 10px 14px; border-radius: 8px; font-weight: bold; font-size: 14px; text-align: center; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-                    🔥 ¡Estás ahorrando {ahorro_str} en esta compra!
+                    🔥 ¡Estás ahorrando {ahorro_str} en esta compra por precios en oferta!
                 </div>
             """, unsafe_allow_html=True)
 
@@ -635,14 +655,16 @@ else:
                 mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: $ {subtotal:,.0f}\n"
                 st.markdown("<hr style='margin: 8px 0; border-color: #e5e7eb;'>", unsafe_allow_html=True)
 
-            st.markdown(f"### Total General: $ {total_general:,.0f}".replace(",", "."))
+            st.markdown(f"### Total de lista / Tarjeta: $ {total_general:,.0f}".replace(",", "."))
+            st.markdown(f"<p style='color:#065f46; font-weight:bold; font-size:16px;'>🏦 Total pagando por Transferencia (20% OFF): {total_transf_str}</p>", unsafe_allow_html=True)
             
             if total_ahorro > 0:
                 ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
-                st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:14px; margin-top:-10px;'>🎉 Ahorro total acumulado: {ahorro_str}</p>", unsafe_allow_html=True)
-                mensaje_wa += f"\n🎉 ¡Ahorro total en promociones: {ahorro_str}!"
+                st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:14px; margin-top:-10px;'>🎉 Ahorro total acumulado en ofertas: {ahorro_str}</p>", unsafe_allow_html=True)
+                mensaje_wa += f"\n🎉 ¡Ahorro total en ofertas: {ahorro_str}!"
 
-            mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
+            mensaje_wa += f"\n\nTotal estimado Lista/Tarjeta: $ {total_general:,.0f}".replace(",", ".")
+            mensaje_wa += f"\nTotal abonando con Transferencia (20% OFF): {total_transf_str}"
             
             wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
             
@@ -687,7 +709,6 @@ else:
             st.query_params.clear()
             st.rerun()
 
-    # Botón Volver arriba
     st.markdown(
         """
         <div style="text-align: center; margin-top: 25px; margin-bottom: 20px;">
