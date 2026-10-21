@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS avanzados para ampliar el ancho de la página y aumentar el logo un 150%
+# Estilos CSS avanzados
 st.markdown("""
     <style>
     /* Ampliar el contenedor principal para que abarque más la pantalla */
@@ -46,7 +46,7 @@ st.markdown("""
         border-radius: 3px;
     }
     
-    /* Logotipo ELECTRO+ ampliado un 150% (42px) */
+    /* Logotipo ELECTRO+ ampliado */
     .brand-logo {
         font-size: 42px;
         font-weight: 900;
@@ -154,6 +154,27 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 6px;
     }
+
+    /* Estilo para la etiqueta de descuento */
+    .badge-discount {
+        background-color: #ef4444;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-bottom: 6px;
+        margin-left: 4px;
+    }
+
+    .old-price {
+        font-size: 13px;
+        color: #9ca3af;
+        text-decoration: line-through;
+        font-weight: 600;
+        margin-right: 6px;
+    }
     
     .product-title {
         font-size: 13px;
@@ -182,6 +203,8 @@ st.markdown("""
         font-weight: 800;
         color: #111827;
         margin: 4px 0;
+        display: flex;
+        align-items: baseline;
     }
     
     .shipping-tag {
@@ -208,9 +231,6 @@ st.markdown("""
         text-align: center;
     }
 
-    /* -------------------------------------------------------------
-       CUSTOMIZACIÓN RESALTADA DEL BOTÓN FULLSCREEN DE IMÁGENES
-    ------------------------------------------------------------- */
     div[data-testid="stImage"] [data-testid="stElementActionButton"] {
         opacity: 1 !important;
         visibility: visible !important;
@@ -277,6 +297,7 @@ def cargar_datos():
                     "producto": p.get("producto"),
                     "marca": p.get("marca"),
                     "precioVenta": float(p.get("precio_venta", 0)),
+                    "precioAnterior": float(p.get("precio_anterior")) if p.get("precio_anterior") is not None else None,
                     "stock": int(p.get("stock", 0)),
                     "imagenUrl": p.get("imagen_url", "")
                 })
@@ -293,7 +314,7 @@ if "carrito" not in st.session_state:
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
-# Detectar si la URL trae un producto específico (ej: ?prod=AR-ELEC-0001)
+# Detectar si la URL trae un producto específico
 query_params = st.query_params
 prod_en_url = query_params.get("prod", "")
 
@@ -374,7 +395,7 @@ else:
 
     st.markdown('<div id="catalogo-productos"></div>', unsafe_allow_html=True)
 
-    # Buscador y Marcas (con key="select_marca")
+    # Buscador y Marcas
     col_busq, col_marca = st.columns([2, 1])
     with col_busq:
         busqueda = st.text_input("🔍 Buscar...", placeholder="Encontrá lo que querés", key="input_busqueda")
@@ -397,17 +418,14 @@ else:
         if prod_en_url:
             match = (prod_id.lower() == prod_en_url.lower())
         else:
-            if query:
-                match_categoria = True
-            else:
-                match_categoria = True
-                cat = st.session_state.categoria_activa
-                if cat == "Hogar":
-                    match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
-                elif cat == "Lavado":
-                    match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
-                elif cat == "Cocina":
-                    match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
+            match_categoria = True
+            cat = st.session_state.categoria_activa
+            if cat == "Hogar":
+                match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
+            elif cat == "Lavado":
+                match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
+            elif cat == "Cocina":
+                match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
 
             match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
             
@@ -451,6 +469,19 @@ else:
                 precio_num = prod.get('precioVenta', 0)
                 precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
+                # --- LÓGICA DE PRECIO ANTERIOR Y DESCUENTO ---
+                precio_ant = prod.get("precioAnterior")
+                old_price_html = ""
+                discount_badge_html = ""
+                
+                if precio_ant and precio_ant > precio_num:
+                    precio_ant_str = f"$ {precio_ant:,.0f}".replace(",", ".")
+                    old_price_html = f'<span class="old-price">{precio_ant_str}</span>'
+                    
+                    pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
+                    discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
+                # ---------------------------------------------
+                
                 with st.container():
                     st.markdown('<div class="product-card">', unsafe_allow_html=True)
                     
@@ -463,9 +494,11 @@ else:
 
                     st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
-                    st.markdown(f'<div class="product-price">{precio_str}</div>', unsafe_allow_html=True)
+                    
+                    # Render del Precio actual + Precio Anterior + Badge de descuento
+                    st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span></div>', unsafe_allow_html=True)
 
-                    # Botón de Compartir por WhatsApp con enlace directo al producto
+                    # Botón de Compartir por WhatsApp
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
                     wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                     wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
@@ -508,7 +541,7 @@ else:
                         else:
                             badge_html = '<span class="badge-ok">Disponible ✓</span>'
                         
-                        st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div>{badge_html}{discount_badge_html}</div>', unsafe_allow_html=True)
                         
                         if en_carrito:
                             st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
