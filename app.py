@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS avanzados
+# Estilos CSS avanzados con fuentes y elementos ampliados
 st.markdown("""
     <style>
     /* Ampliar el contenedor principal para que abarque más la pantalla */
@@ -83,13 +83,13 @@ st.markdown("""
         background-color: white;
         border: 1px solid #e5e7eb;
         border-radius: 10px;
-        padding: 12px 8px;
+        padding: 14px 10px;
         margin-bottom: 20px;
         text-align: center;
     }
     
     .benefit-item {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 700;
         color: #374151;
         display: flex;
@@ -98,61 +98,62 @@ st.markdown("""
         gap: 4px;
     }
     
+    /* Tarjeta de producto ampliada */
     .product-card {
         background-color: white;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        padding: 14px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        padding: 18px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.03);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         height: 100%;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
     }
     
     .badge-last {
         background-color: #fee2e2;
         color: #b91c1c;
         font-weight: 700;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 11px;
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     
     .badge-few {
         background-color: #fef3c7;
         color: #92400e;
         font-weight: 700;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 11px;
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     
     .badge-ok {
         background-color: #d1fae5;
         color: #065f46;
         font-weight: 600;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 11px;
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     
     .badge-out {
         background-color: #f3f4f6;
         color: #4b5563;
         font-weight: 600;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 11px;
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
 
     /* Estilo para la etiqueta de descuento */
@@ -160,74 +161,78 @@ st.markdown("""
         background-color: #ef4444;
         color: #ffffff;
         font-weight: 800;
-        font-size: 10px;
-        padding: 3px 8px;
+        font-size: 11px;
+        padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
-        margin-left: 4px;
+        margin-bottom: 8px;
+        margin-left: 6px;
     }
 
     .old-price {
-        font-size: 13px;
+        font-size: 16px;
         color: #9ca3af;
         text-decoration: line-through;
         font-weight: 600;
-        margin-right: 6px;
+        margin-right: 8px;
     }
     
+    /* Descripción / Título del Producto Más Grande */
     .product-title {
-        font-size: 13px;
-        font-weight: 500;
-        color: #1f2937;
-        margin-bottom: 8px;
-        line-height: 1.3;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 10px;
+        line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        height: 34px;
+        min-height: 44px;
     }
     
+    /* Marca Más Grande */
     .product-brand {
-        font-size: 10px;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 800;
         color: #7c3aed;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 2px;
+        letter-spacing: 0.8px;
+        margin-bottom: 4px;
     }
     
+    /* Precio Principal Más Grande */
     .product-price {
-        font-size: 18px;
-        font-weight: 800;
+        font-size: 22px;
+        font-weight: 900;
         color: #111827;
-        margin: 4px 0;
+        margin: 6px 0 10px 0;
         display: flex;
         align-items: baseline;
     }
     
+    /* Etiqueta de Envío a toda Argentina */
     .shipping-tag {
         color: #059669;
-        font-size: 11px;
-        font-weight: 600;
+        font-size: 12px;
+        font-weight: 700;
         background-color: #ecfdf5;
-        padding: 3px 6px;
-        border-radius: 4px;
+        padding: 5px 10px;
+        border-radius: 6px;
         display: inline-block;
         margin-top: 6px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
     
     .added-badge {
         color: #047857;
         background-color: #d1fae5;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 700;
-        padding: 4px 8px;
+        padding: 5px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         text-align: center;
     }
 
@@ -340,15 +345,15 @@ st.markdown("")
 st.markdown("""
     <div class="benefits-bar">
         <div class="benefit-item">
-            <span style="font-size: 16px;">🏪</span>
+            <span style="font-size: 18px;">🏪</span>
             <span>RETIRÁ GRATIS EN SUCURSAL</span>
         </div>
         <div class="benefit-item">
-            <span style="font-size: 16px;">🎧</span>
+            <span style="font-size: 18px;">🎧</span>
             <span>VENTA POR WHATSAPP</span>
         </div>
         <div class="benefit-item">
-            <span style="font-size: 16px;">📦</span>
+            <span style="font-size: 18px;">📦</span>
             <span>ENVÍOS A TODO EL PAÍS</span>
         </div>
     </div>
@@ -490,7 +495,7 @@ else:
                     if img_url:
                         st.image(img_url, use_column_width=True)
                     else:
-                        st.markdown('<div style="height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:11px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
+                        st.markdown('<div style="height:160px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:12px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
                     st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
@@ -502,7 +507,7 @@ else:
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
                     wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                     wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
-                    st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:6px; border-radius:6px; text-decoration:none; font-size:11px; font-weight:bold; margin-bottom:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
+                    st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
                     # Gestión de stock y carrito
                     if stock <= 0:
@@ -512,7 +517,7 @@ else:
                         
                         with st.expander("🔔 Avísame cuando ingrese"):
                             with st.form(key=f"form_stock_{idx}_{prod_id}"):
-                                st.markdown(f"<p style='font-size:11px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
+                                st.markdown(f"<p style='font-size:12px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
                                 nombre_lead = st.text_input("Tu Nombre", key=f"lead_nombre_{idx}_{prod_id}")
                                 tel_lead = st.text_input("Tu Teléfono / WhatsApp", key=f"lead_tel_{idx}_{prod_id}")
                                 
@@ -545,9 +550,10 @@ else:
                         
                         if en_carrito:
                             st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
-                            st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
+                            st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 13px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
                         
-                        st.markdown('<div class="shipping-tag">⚡ Envío rápido y seguro</div>', unsafe_allow_html=True)
+                        # TEXTO ACTUALIZADO
+                        st.markdown('<div class="shipping-tag">📦 Envío a toda Argentina</div>', unsafe_allow_html=True)
 
                         if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                             if prod_id in st.session_state.carrito:
@@ -590,7 +596,7 @@ else:
                 
                 c_info, c_qty, c_del = st.columns([2.5, 2, 1])
                 with c_info:
-                    st.markdown(f"**{item['producto']}**<br><span style='font-size:11px; color:#7c3aed; font-weight:600;'>{item['marca']}</span><br><span style='font-size:12px; font-weight:700;'>Subtotal: ${subtotal:,.0f}</span>".replace(",", "."), unsafe_allow_html=True)
+                    st.markdown(f"**{item['producto']}**<br><span style='font-size:12px; color:#7c3aed; font-weight:600;'>{item['marca']}</span><br><span style='font-size:13px; font-weight:700;'>Subtotal: ${subtotal:,.0f}</span>".replace(",", "."), unsafe_allow_html=True)
                 with c_qty:
                     nueva_cantidad = st.number_input(
                         "Cant",
