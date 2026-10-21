@@ -626,8 +626,8 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-        with st.expander("📦 Detalle completo del pedido y pagar por WhatsApp", expanded=True):
-            mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
+        with st.expander("📦 Detalle completo del pedido", expanded=True):
+            mensaje_wa = "Hola, quiero realizar el siguiente pedido:\n\n"
             
             for prod_id, item in list(st.session_state.carrito.items()):
                 subtotal = item["precio"] * item["cantidad"]
@@ -663,12 +663,12 @@ else:
                 st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:14px; margin-top:-10px;'>🎉 Ahorro total acumulado en ofertas: {ahorro_str}</p>", unsafe_allow_html=True)
                 mensaje_wa += f"\n🎉 ¡Ahorro total en ofertas: {ahorro_str}!"
 
-            mensaje_wa += f"\n\nTotal estimado Lista/Tarjeta: $ {total_general:,.0f}".replace(",", ".")
-            mensaje_wa += f"\nTotal abonando con Transferencia (20% OFF): {total_transf_str}"
+            mensaje_wa += f"\n\nTotal precio Lista/Tarjeta: $ {total_general:,.0f}".replace(",", ".")
+            mensaje_wa += f"\nTotal con Transferencia (20% OFF): {total_transf_str}"
             
             wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
             
-            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Pagar pedido por WhatsApp</a>', unsafe_allow_html=True)
             
             if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
                 st.session_state.carrito = {}
