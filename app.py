@@ -520,11 +520,11 @@ else:
                     st.markdown(f"""
                         <div class="promo-box">
                             <div class="promo-transfer">
-                                🏦 <strong>20% OFF</strong> pagando por Transferencia Bancaria<br>
-                                <span style="font-size: 13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span>
+                                🏦 <strong>20% OFF</strong> Transferencia Bancaria<br>
+                                <span style="font-size: 13px;">Con transferencia: <strong>{precio_transf_str}</strong></span>
                             </div>
                             <div class="promo-item">
-                                💳 <strong>6 cuotas sin interés</strong> de <strong>{cuota_6_str}</strong> pagando con VISA
+                                💳 <strong>6 cuotas sin interés</strong> de <strong>{cuota_6_str}</strong> con VISA
                             </div>
                             <div class="promo-item">
                                 📦 <strong>Envío GRATIS</strong> a Capital Federal
@@ -603,7 +603,7 @@ else:
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### Carrito de Compras y Pedido")
+    st.markdown("### Mi Carrito")
 
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
@@ -626,7 +626,7 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-        with st.expander("📦 Ver detalle completo del pedido y enviar a WhatsApp", expanded=True):
+        with st.expander("📦 Detalle completo del pedido y pagar por WhatsApp", expanded=True):
             mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
             
             for prod_id, item in list(st.session_state.carrito.items()):
@@ -678,7 +678,7 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### Categorías (Explorar más)")
+    st.markdown("### (Explorar más Categorias)")
     cat_cols_bottom = st.columns(4)
     with cat_cols_bottom[0]:
         if st.button("Todas", key="cat_bot_todas", use_container_width=True):
