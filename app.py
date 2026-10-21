@@ -331,9 +331,16 @@ st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
 productos = cargar_datos()
 
-# Encabezado E-commerce
+# Encabezado E-commerce y cálculo de Ahorro Acumulado
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
 total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
+
+total_ahorro = 0
+for item in st.session_state.carrito.values():
+    precio_ant = item.get("precioAnterior")
+    precio_actual = item.get("precio")
+    if precio_ant and precio_ant > precio_actual:
+        total_ahorro += (precio_ant - precio_actual) * item["cantidad"]
 
 col_logo, col_cart = st.columns([2.6, 1.4])
 with col_logo:
@@ -564,6 +571,7 @@ else:
                                     "producto": prod.get("producto"),
                                     "marca": prod.get("marca"),
                                     "precio": precio_num,
+                                    "precioAnterior": precio_ant,
                                     "cantidad": 1
                                 }
                             
@@ -588,6 +596,15 @@ else:
                 <span style="font-weight: bold; font-size: 15px;">Total: $ {total_general:,.0f}</span>
             </div>
         """.replace(",", "."), unsafe_allow_html=True)
+
+        # BANNER DE AHORRO SI EXISTE DESCUENTO ACUMULADO
+        if total_ahorro > 0:
+            ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
+            st.markdown(f"""
+                <div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 10px 14px; border-radius: 8px; font-weight: bold; font-size: 14px; text-align: center; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+                    🔥 ¡Estás ahorrando {ahorro_str} en esta compra!
+                </div>
+            """, unsafe_allow_html=True)
 
         with st.expander("📦 Ver detalle completo del pedido y enviar a WhatsApp", expanded=True):
             mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
@@ -619,6 +636,12 @@ else:
                 st.markdown("<hr style='margin: 8px 0; border-color: #e5e7eb;'>", unsafe_allow_html=True)
 
             st.markdown(f"### Total General: $ {total_general:,.0f}".replace(",", "."))
+            
+            if total_ahorro > 0:
+                ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
+                st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:14px; margin-top:-10px;'>🎉 Ahorro total acumulado: {ahorro_str}</p>", unsafe_allow_html=True)
+                mensaje_wa += f"\n🎉 ¡Ahorro total en promociones: {ahorro_str}!"
+
             mensaje_wa += f"\nTotal estimado del pedido: $ {total_general:,.0f}".replace(",", ".")
             
             wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
