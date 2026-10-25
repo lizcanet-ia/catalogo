@@ -313,6 +313,7 @@ def cargar_datos():
                     "descTransferenciaPct": float(p.get("descuento_transferencia_pct")) if p.get("descuento_transferencia_pct") is not None else None,
                     "cuotasSinInteres": int(p.get("cuotas_sin_interes")) if p.get("cuotas_sin_interes") is not None else None,
                     "envioTexto": str(p.get("envio_texto") or "").strip(),
+                    "retiroTexto": str(p.get("retiro_texto") or "").strip(),
                     "stock": int(p.get("stock", 0)),
                     "imagenUrl": p.get("imagen_url", "")
                 })
@@ -484,6 +485,7 @@ else:
                 desc_transf_pct = prod.get("descTransferenciaPct")
                 cuotas_num = prod.get("cuotasSinInteres")
                 envio_txt = prod.get("envioTexto")
+                retiro_txt = prod.get("retiroTexto")
 
                 promo_items = []
                 
@@ -504,7 +506,8 @@ else:
                 if envio_txt:
                     promo_items.append(f'<div class="promo-item">{envio_txt}</div>')
 
-                promo_items.append('<div class="promo-item">🏪 Disponible para <strong>retiro en sucursal</strong></div>')
+                if retiro_txt:
+                    promo_items.append(f'<div class="promo-item">{retiro_txt}</div>')
 
                 promo_box_html = f'<div class="promo-box">{"".join(promo_items)}</div>' if promo_items else ""
                 
@@ -534,7 +537,6 @@ else:
                     st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
                     if promo_box_html:
-                        # RENDER SANITIZADO SIN SANGRÍAS
                         st.markdown(textwrap.dedent(promo_box_html).strip(), unsafe_allow_html=True)
 
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
