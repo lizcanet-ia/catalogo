@@ -4,297 +4,58 @@ import urllib.parse
 import textwrap
 
 st.set_page_config(
-    page_title="ELECTRO+",
+    page_title="Catálogo Digital",
     page_icon="🛒",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-st.markdown("""
-    <style>
-    .block-container {
-        max-width: 95% !important;
-        padding-top: 2rem !important;
-        padding-bottom: 3rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
-    }
-
-    html, body, [class*="css"] {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-    }
-    
-    .main {
-        background-color: #f4f5f7;
-        padding-bottom: 60px;
-    }
-    
-    html {
-        scroll-behavior: smooth;
-    }
-    
-    .top-bar {
-        background-color: #7c3aed;
-        height: 6px;
-        width: 100%;
-        margin-top: 6px;
-        margin-bottom: 32px;
-        border-radius: 3px;
-    }
-    
-    .brand-logo {
-        font-size: 42px;
-        font-weight: 900;
-        color: #111827;
-        letter-spacing: -0.5px;
-        line-height: 1.1;
-    }
-    
-    .brand-logo span {
-        color: #7c3aed;
-    }
-    
-    .cart-link-badge {
-        display: block;
-        text-align: right;
-        background-color: #f3f4f6;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 16px; 
-        color: #374151;
-        text-decoration: none;
-        transition: background-color 0.2s ease;
-    }
-    .cart-link-badge:hover {
-        background-color: #e5e7eb;
-        color: #111827;
-    }
-    
-    .benefits-bar {
-        display: flex;
-        justify-content: space-around;
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 14px 10px;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .benefit-item {
-        font-size: 12px;
-        font-weight: 700;
-        color: #374151;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-    }
-    
-    .badge-last {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .badge-few {
-        background-color: #fef3c7;
-        color: #92400e;
-        font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .badge-ok {
-        background-color: #d1fae5;
-        color: #065f46;
-        font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .badge-out {
-        background-color: #f3f4f6;
-        color: #4b5563;
-        font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        display: inline-block;
-    }
-
-    .badge-discount {
-        background-color: #ef4444;
-        color: #ffffff;
-        font-weight: 800;
-        font-size: 13px;
-        padding: 4px 10px;
-        border-radius: 6px;
-        display: inline-block;
-        margin-left: 8px;
-        vertical-align: middle;
-    }
-
-    .old-price {
-        font-size: 18px;
-        color: #9ca3af;
-        text-decoration: line-through;
-        font-weight: 600;
-        margin-right: 8px;
-    }
-    
-    .product-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 10px;
-        line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 50px;
-    }
-    
-    .product-brand {
-        font-size: 13px;
-        font-weight: 800;
-        color: #7c3aed;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 6px;
-    }
-    
-    .product-price {
-        font-size: 24px;
-        font-weight: 900;
-        color: #111827;
-        margin: 6px 0 12px 0;
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .promo-box {
-        background-color: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 12px;
-        margin-top: 10px;
-        margin-bottom: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        min-height: 160px;
-    }
-
-    .promo-transfer {
-        background-color: #ecfdf5;
-        border: 1px solid #a7f3d0;
-        color: #065f46;
-        padding: 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 700;
-        line-height: 1.4;
-    }
-
-    .promo-item {
-        font-size: 14px;
-        color: #374151;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        line-height: 1.4;
-    }
-
-    .cart-status-box {
-        background-color: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        padding: 8px 12px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .added-badge {
-        color: #047857;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .view-cart-link {
-        color: #047857 !important;
-        font-size: 14px !important;
-        font-weight: 700 !important;
-        text-decoration: underline !important;
-    }
-
-    div[data-testid="stImage"] [data-testid="stElementActionButton"] {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    div[data-testid="stImage"] [data-testid="stElementActionButton"] button {
-        background-color: #ffffff !important;
-        border: 1px solid #7c3aed !important;
-        border-radius: 20px !important;
-        padding: 6px 14px !important;
-        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.25) !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        cursor: pointer !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-    }
-
-    div[data-testid="stImage"] [data-testid="stElementActionButton"] button:hover {
-        transform: scale(1.05) !important;
-        box-shadow: 0 6px 14px rgba(124, 58, 237, 0.35) !important;
-    }
-
-    div[data-testid="stImage"] [data-testid="stElementActionButton"] svg {
-        width: 18px !important;
-        height: 18px !important;
-        color: #7c3aed !important;
-    }
-
-    div[data-testid="stImage"] [data-testid="stElementActionButton"] button::after {
-        content: "Ampliar foto" !important;
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        color: #7c3aed !important;
-        white-space: nowrap !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 SUPABASE_URL = "https://fyakcgfnhrsiohistsac.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YWtjZ2ZuaHJzaW9oaXN0c2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NDU1MzYsImV4cCI6MjEwNzQyMTUzNn0.NSguf7dQUss3LOz_hhpFlEr20YfvjxEbVATg4OX01sM"
 
-CLIENTE_ACTUAL = "electro_plus"
 URL_BASE_APP = "https://catalogo-lizia.streamlit.app"
 
+# --- DETECCION MULTI-CLIENTE POR URL ---
+query_params = st.query_params
+CLIENTE_SOLICITADO = query_params.get("cliente", "electro_plus").strip().lower()
+prod_en_url = query_params.get("prod", "")
+
+@st.cache_data(ttl=15)
+def cargar_config_cliente(slug_cliente):
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        response = (
+            supabase.table("clientes")
+            .select("*")
+            .eq("client_id", slug_cliente)
+            .eq("activo", True)
+            .execute()
+        )
+        if response.data and len(response.data) > 0:
+            return response.data[0]
+        # Configuración fallback por defecto si no existe en la tabla clientes
+        return {
+            "client_id": slug_cliente,
+            "nombre_comercio": slug_cliente.replace("_", " ").upper(),
+            "whatsapp_numero": "5491165295937",
+            "color_primario": "#7c3aed"
+        }
+    except Exception:
+        return {
+            "client_id": slug_cliente,
+            "nombre_comercio": "ELECTRO+",
+            "whatsapp_numero": "5491165295937",
+            "color_primario": "#7c3aed"
+        }
+
 @st.cache_data(ttl=10)
-def cargar_datos():
+def cargar_productos_cliente(slug_cliente):
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
         response = (
             supabase.table("productos")
             .select("*")
-            .eq("client_id", CLIENTE_ACTUAL)
+            .eq("client_id", slug_cliente)
             .eq("activo", True)
             .execute()
         )
@@ -323,19 +84,292 @@ def cargar_datos():
         st.error(f"Error al conectar con Supabase: {e}")
         return []
 
+config_cliente = cargar_config_cliente(CLIENTE_SOLICITADO)
+COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
+NOMBRE_MARCA = config_cliente.get("nombre_comercio", "ELECTRO+")
+WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
+
+st.markdown(f"""
+    <style>
+    .block-container {{
+        max-width: 95% !important;
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }}
+
+    html, body, [class*="css"] {{
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }}
+    
+    .main {{
+        background-color: #f4f5f7;
+        padding-bottom: 60px;
+    }}
+    
+    html {{
+        scroll-behavior: smooth;
+    }}
+    
+    .top-bar {{
+        background-color: {COLOR_MARCA};
+        height: 6px;
+        width: 100%;
+        margin-top: 6px;
+        margin-bottom: 32px;
+        border-radius: 3px;
+    }}
+    
+    .brand-logo {{
+        font-size: 42px;
+        font-weight: 900;
+        color: #111827;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+    }}
+    
+    .brand-logo span {{
+        color: {COLOR_MARCA};
+    }}
+    
+    .cart-link-badge {{
+        display: block;
+        text-align: right;
+        background-color: #f3f4f6;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 16px; 
+        color: #374151;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+    }}
+    .cart-link-badge:hover {{
+        background-color: #e5e7eb;
+        color: #111827;
+    }}
+    
+    .benefits-bar {{
+        display: flex;
+        justify-content: space-around;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }}
+    
+    .benefit-item {{
+        font-size: 12px;
+        font-weight: 700;
+        color: #374151;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }}
+    
+    .badge-last {{
+        background-color: #fee2e2;
+        color: #b91c1c;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        display: inline-block;
+    }}
+    
+    .badge-few {{
+        background-color: #fef3c7;
+        color: #92400e;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        display: inline-block;
+    }}
+    
+    .badge-ok {{
+        background-color: #d1fae5;
+        color: #065f46;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        display: inline-block;
+    }}
+    
+    .badge-out {{
+        background-color: #f3f4f6;
+        color: #4b5563;
+        font-weight: 700;
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        display: inline-block;
+    }}
+
+    .badge-discount {{
+        background-color: #ef4444;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 13px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-left: 8px;
+        vertical-align: middle;
+    }}
+
+    .old-price {{
+        font-size: 18px;
+        color: #9ca3af;
+        text-decoration: line-through;
+        font-weight: 600;
+        margin-right: 8px;
+    }}
+    
+    .product-title {{
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 50px;
+    }}
+    
+    .product-brand {{
+        font-size: 13px;
+        font-weight: 800;
+        color: {COLOR_MARCA};
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
+    }}
+    
+    .product-price {{
+        font-size: 24px;
+        font-weight: 900;
+        color: #111827;
+        margin: 6px 0 12px 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }}
+
+    .promo-box {{
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 10px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 160px;
+    }}
+
+    .promo-transfer {{
+        background-color: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.4;
+    }}
+
+    .promo-item {{
+        font-size: 14px;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1.4;
+    }}
+
+    .cart-status-box {{
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }}
+
+    .added-badge {{
+        color: #047857;
+        font-size: 13px;
+        font-weight: 700;
+    }}
+
+    .view-cart-link {{
+        color: #047857 !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+    }}
+
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] {{
+        opacity: 1 !important;
+        visibility: visible !important;
+    }}
+
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] button {{
+        background-color: #ffffff !important;
+        border: 1px solid {COLOR_MARCA} !important;
+        border-radius: 20px !important;
+        padding: 6px 14px !important;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }}
+
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] button:hover {{
+        transform: scale(1.05) !important;
+        box-shadow: 0 6px 14px rgba(124, 58, 237, 0.35) !important;
+    }}
+
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] svg {{
+        width: 18px !important;
+        height: 18px !important;
+        color: {COLOR_MARCA} !important;
+    }}
+
+    div[data-testid="stImage"] [data-testid="stElementActionButton"] button::after {{
+        content: "Ampliar foto" !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: {COLOR_MARCA} !important;
+        white-space: nowrap !important;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
 if "carrito" not in st.session_state:
     st.session_state.carrito = {}
 
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
-query_params = st.query_params
-prod_en_url = query_params.get("prod", "")
-
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
-productos = cargar_datos()
+productos = cargar_productos_cliente(CLIENTE_SOLICITADO)
 
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
 total_general = sum(item["precio"] * item["cantidad"] for item in st.session_state.carrito.values())
@@ -349,7 +383,7 @@ for item in st.session_state.carrito.values():
 
 col_logo, col_cart = st.columns([2.6, 1.4])
 with col_logo:
-    st.markdown('<div class="brand-logo">ELECTRO<span>+</span></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="brand-logo">{NOMBRE_MARCA}</div>', unsafe_allow_html=True)
 with col_cart:
     st.markdown(f'<a href="#carrito-abajo" class="cart-link-badge">🛒 {total_items} items</a>', unsafe_allow_html=True)
 
@@ -373,20 +407,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if not productos:
-    st.warning("Cargando productos o sin conexión con Supabase...")
+    st.warning(f"No hay productos cargados o activos para el cliente: '{CLIENTE_SOLICITADO}'.")
 else:
-    # --- RENDERIZADO DINÁMICO DE CATEGORÍAS ---
     st.markdown("### Categorías")
     
-    # Extraer categorías únicas reales de la base de datos
     categorias_unicas = ["Todas"] + sorted(list(set(p.get("categoria", "General") for p in productos if p.get("categoria"))))
     
-    # Crear los botones de forma dinámica repartidos en columnas
     cat_cols_top = st.columns(min(len(categorias_unicas), 6))
     for idx_cat, cat_nombre in enumerate(categorias_unicas):
         col_target = cat_cols_top[idx_cat % len(cat_cols_top)]
         with col_target:
-            # Resaltar el botón si es la categoría activa
             es_activa = (st.session_state.categoria_activa == cat_nombre)
             btn_label = f"• {cat_nombre} •" if es_activa else cat_nombre
             
@@ -394,7 +424,6 @@ else:
                 st.session_state.categoria_activa = cat_nombre
                 st.session_state.input_busqueda = ""
                 st.session_state.select_marca = "TODAS"
-                st.query_params.clear()
                 st.rerun()
 
     st.markdown("---")
@@ -436,7 +465,7 @@ else:
             productos_filtrados.append(p)
 
     if prod_en_url and productos_filtrados:
-        st.info(f"✨ Viendo producto compartido. [Ver todo el catálogo]({URL_BASE_APP})")
+        st.info(f"✨ Viendo producto compartido. [Ver todo el catálogo]({URL_BASE_APP}/?cliente={CLIENTE_SOLICITADO})")
 
     if not productos_filtrados:
         if query or prod_en_url:
@@ -444,6 +473,7 @@ else:
             if prod_en_url:
                 if st.button("Ver catálogo completo"):
                     st.query_params.clear()
+                    st.query_params["cliente"] = CLIENTE_SOLICITADO
                     st.rerun()
         else:
             st.info(f"No se encontraron productos en la categoría '{st.session_state.categoria_activa}'.")
@@ -526,8 +556,8 @@ else:
                             with st.expander("📋 Ver Ficha Técnica / Especificaciones"):
                                 st.markdown(f"<div style='font-size:13px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
 
-                        link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
-                        wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
+                        link_directo_producto = f"{URL_BASE_APP}/?cliente={CLIENTE_SOLICITADO}&prod={prod_id}"
+                        wa_share_msg = f"¡Mirá este producto en {NOMBRE_MARCA}: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                         wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
                         st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:10px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:bold; margin-bottom:10px; margin-top:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
@@ -547,7 +577,7 @@ else:
                                             try:
                                                 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
                                                 supabase.table("stock_leads").insert({
-                                                    "client_id": CLIENTE_ACTUAL,
+                                                    "client_id": CLIENTE_SOLICITADO,
                                                     "cod": prod_id,
                                                     "producto": prod.get("producto"),
                                                     "nombre": nombre_lead.strip(),
@@ -611,7 +641,7 @@ else:
             st.markdown(banner_ahorro_html, unsafe_allow_html=True)
 
         with st.expander("📦 Ver detalle completo del pedido y enviar a WhatsApp", expanded=True):
-            mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
+            mensaje_wa = f"Hola *{NOMBRE_MARCA}*, quiero realizar el siguiente pedido desde el catálogo:\n\n"
             
             for prod_id, item in list(st.session_state.carrito.items()):
                 subtotal = item["precio"] * item["cantidad"]
@@ -619,7 +649,7 @@ else:
                 
                 c_info, c_qty, c_del = st.columns([2.5, 2, 1])
                 with c_info:
-                    item_html = f"**{item['producto']}**<br><span style='font-size:13px; color:#7c3aed; font-weight:600;'>{item['marca']}</span><br><span style='font-size:14px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
+                    item_html = f"**{item['producto']}**<br><span style='font-size:13px; color:{COLOR_MARCA}; font-weight:600;'>{item['marca']}</span><br><span style='font-size:14px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
                     st.markdown(item_html, unsafe_allow_html=True)
                 with c_qty:
                     nueva_cantidad = st.number_input(
@@ -651,7 +681,7 @@ else:
             mensaje_wa += f"\n\nTotal estimado mi pedido: {total_str}"
             mensaje_wa += f"\n* Pedido sujeto a confirmación de stock por parte del comercio."
             
-            wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
+            wa_url = f"https://wa.me/{WHATSAPP_NUMERO}?text={urllib.parse.quote(mensaje_wa)}"
             
             st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:16px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Pagar mi carrito por WhatsApp</a>', unsafe_allow_html=True)
             
@@ -660,7 +690,7 @@ else:
                 st.rerun()
 
     # -------------------------------------------------------------
-    # 3. SECCIÓN DE CATEGORÍAS EN PIE DE PÁGINA (DINÁMICAS)
+    # 3. SECCIÓN DE CATEGORÍAS EN PIE DE PÁGINA
     # -------------------------------------------------------------
     st.markdown("---")
     st.markdown("### Categorías (Explorar más)")
@@ -673,7 +703,6 @@ else:
                 st.session_state.categoria_activa = cat_nombre
                 st.session_state.input_busqueda = ""
                 st.session_state.select_marca = "TODAS"
-                st.query_params.clear()
                 st.rerun()
 
     st.markdown(
