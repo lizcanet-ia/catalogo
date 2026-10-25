@@ -41,7 +41,6 @@ def cargar_config_cliente(slug_cliente):
                 "color_primario": row.get("color_primario") or "#7c3aed"
             }
         
-        # Fallback para el cliente por defecto
         if slug_cliente == "electro_plus":
             return {
                 "encontrado": True,
@@ -102,7 +101,6 @@ def cargar_productos_cliente(slug_cliente):
 
 config_cliente = cargar_config_cliente(CLIENTE_SOLICITADO)
 
-# PANTALLA FALLBACK AJUSTADA
 if not config_cliente.get("encontrado"):
     st.markdown("""
         <div style="text-align: center; padding: 40px 20px 20px 20px;">
@@ -139,6 +137,9 @@ COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = config_cliente.get("nombre_comercio", "ELECTRO+")
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
 
+# CONFIGURACIÓN DE COLOR DE FONDO ESPECÍFICO POR CLIENTE
+COLOR_FONDO_MAIN = "#FAF0E6" if CLIENTE_SOLICITADO == "patitas_pet" else "#f4f5f7"
+
 def formatear_logo_html(nombre):
     if "+" in nombre:
         partes = nombre.rsplit("+", 1)
@@ -166,7 +167,7 @@ st.markdown(f"""
     }}
     
     .main {{
-        background-color: #f4f5f7;
+        background-color: {COLOR_FONDO_MAIN};
         padding-bottom: 60px;
     }}
     
@@ -198,17 +199,18 @@ st.markdown(f"""
     .cart-link-badge {{
         display: block;
         text-align: right;
-        background-color: #f3f4f6;
+        background-color: #ffffff;
         padding: 8px 12px;
         border-radius: 8px;
         font-weight: bold;
         font-size: 16px; 
         color: #374151;
         text-decoration: none;
+        border: 1px solid #e5e7eb;
         transition: background-color 0.2s ease;
     }}
     .cart-link-badge:hover {{
-        background-color: #e5e7eb;
+        background-color: #f3f4f6;
         color: #111827;
     }}
     
@@ -327,7 +329,7 @@ st.markdown(f"""
     }}
 
     .promo-box {{
-        background-color: #f9fafb;
+        background-color: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 8px;
         padding: 12px;
@@ -393,7 +395,7 @@ st.markdown(f"""
         border: 1px solid {COLOR_MARCA} !important;
         border-radius: 20px !important;
         padding: 6px 14px !important;
-        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.25) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
         display: flex !important;
         align-items: center !important;
         gap: 6px !important;
@@ -403,7 +405,6 @@ st.markdown(f"""
 
     div[data-testid="stImage"] [data-testid="stElementActionButton"] button:hover {{
         transform: scale(1.05) !important;
-        box-shadow: 0 6px 14px rgba(124, 58, 237, 0.35) !important;
     }}
 
     div[data-testid="stImage"] [data-testid="stElementActionButton"] svg {{
