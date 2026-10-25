@@ -15,12 +15,12 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 
 URL_BASE_APP = "https://catalogo-lizia.streamlit.app"
 
-# --- DETECCION MULTI-CLIENTE POR URL ---
+# --- DETECCIÓN MULTI-CLIENTE POR URL ---
 query_params = st.query_params
 CLIENTE_SOLICITADO = query_params.get("cliente", "electro_plus").strip().lower()
 prod_en_url = query_params.get("prod", "")
 
-@st.cache_data(ttl=15)
+@st.cache_data(ttl=10)
 def cargar_config_cliente(slug_cliente):
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -32,11 +32,17 @@ def cargar_config_cliente(slug_cliente):
             .execute()
         )
         if response.data and len(response.data) > 0:
-            return response.data[0]
-        # Configuración fallback por defecto si no existe en la tabla clientes
+            row = response.data[0]
+            return {
+                "client_id": row.get("client_id", slug_cliente),
+                "nombre_comercio": row.get("nombre_comercio") or "ELECTRO+",
+                "whatsapp_numero": row.get("whatsapp_numero") or "5491165295937",
+                "color_primario": row.get("color_primario") or "#7c3aed"
+            }
+        # Fallback de seguridad en caso de no encontrar el cliente en la tabla
         return {
             "client_id": slug_cliente,
-            "nombre_comercio": slug_cliente.replace("_", " ").upper(),
+            "nombre_comercio": "ELECTRO+",
             "whatsapp_numero": "5491165295937",
             "color_primario": "#7c3aed"
         }
@@ -88,6 +94,19 @@ config_cliente = cargar_config_cliente(CLIENTE_SOLICITADO)
 COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = config_cliente.get("nombre_comercio", "ELECTRO+")
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
+
+# Función para formatear el logo destacando el símbolo o última letra con el color de marca
+def formatear_logo_html(nombre):
+    if "+" in nombre:
+        partes = nombre.rsplit("+", 1)
+        return f'{partes[0]}<span>+</span>{partes[1]}'
+    elif "&" in nombre:
+        partes = nombre.rsplit("&", 1)
+        return f'{partes[0]}<span>&</span>{partes[1]}'
+    else:
+        return nombre
+
+LOGO_HTML = formatear_logo_html(NOMBRE_MARCA)
 
 st.markdown(f"""
     <style>
@@ -383,7 +402,7 @@ for item in st.session_state.carrito.values():
 
 col_logo, col_cart = st.columns([2.6, 1.4])
 with col_logo:
-    st.markdown(f'<div class="brand-logo">{NOMBRE_MARCA}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="brand-logo">{LOGO_HTML}</div>', unsafe_allow_html=True)
 with col_cart:
     st.markdown(f'<a href="#carrito-abajo" class="cart-link-badge">🛒 {total_items} items</a>', unsafe_allow_html=True)
 
@@ -407,7 +426,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if not productos:
-    st.warning(f"No hay productos cargados o activos para el cliente: '{CLIENTE_SOLICITADO}'.")
+    st.warning(f"No hay productos cargados o activos para el comercio: '{NOMBRE_MARCA}'.")
 else:
     st.markdown("### Categorías")
     
