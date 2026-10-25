@@ -20,7 +20,7 @@ query_params = st.query_params
 CLIENTE_SOLICITADO = query_params.get("cliente", "electro_plus").strip().lower()
 prod_en_url = query_params.get("prod", "")
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=15)
 def cargar_config_cliente(slug_cliente):
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -34,25 +34,26 @@ def cargar_config_cliente(slug_cliente):
         if response.data and len(response.data) > 0:
             row = response.data[0]
             return {
+                "encontrado": True,
                 "client_id": row.get("client_id", slug_cliente),
-                "nombre_comercio": row.get("nombre_comercio") or "ELECTRO+",
+                "nombre_comercio": row.get("nombre_comercio") or slug_cliente.replace("_", " ").upper(),
                 "whatsapp_numero": row.get("whatsapp_numero") or "5491165295937",
                 "color_primario": row.get("color_primario") or "#7c3aed"
             }
-        # Fallback de seguridad en caso de no encontrar el cliente en la tabla
-        return {
-            "client_id": slug_cliente,
-            "nombre_comercio": "ELECTRO+",
-            "whatsapp_numero": "5491165295937",
-            "color_primario": "#7c3aed"
-        }
+        
+        # Si es el cliente por defecto y no existe en la tabla clientes
+        if slug_cliente == "electro_plus":
+            return {
+                "encontrado": True,
+                "client_id": "electro_plus",
+                "nombre_comercio": "ELECTRO+",
+                "whatsapp_numero": "5491165295937",
+                "color_primario": "#7c3aed"
+            }
+            
+        return {"encontrado": False}
     except Exception:
-        return {
-            "client_id": slug_cliente,
-            "nombre_comercio": "ELECTRO+",
-            "whatsapp_numero": "5491165295937",
-            "color_primario": "#7c3aed"
-        }
+        return {"encontrado": False}
 
 @st.cache_data(ttl=10)
 def cargar_productos_cliente(slug_cliente):
@@ -91,11 +92,30 @@ def cargar_productos_cliente(slug_cliente):
         return []
 
 config_cliente = cargar_config_cliente(CLIENTE_SOLICITADO)
+
+# PANTALLA FALLBACK DE COMERCIO NO ENCONTRADO
+if not config_cliente.get("encontrado"):
+    st.markdown("""
+        <div style="text-align: center; padding: 50px 20px;">
+            <h1 style="font-size: 48px; color: #374151;">🏪🛍️</h1>
+            <h2 style="color: #111827; font-size: 28px; font-weight: 800;">Comercio no encontrado</h2>
+            <p style="color: #6b7280; font-size: 16px; max-width: 500px; margin: 10px auto 30px auto;">
+                El catálogo que estás intentando consultar no existe o fue desactivado temporalmente.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        if st.button("🛍️ Ir al catálogo principal (ELECTRO+)", use_container_width=True):
+            st.query_params.clear()
+            st.query_params["cliente"] = "electro_plus"
+            st.rerun()
+    st.stop()
+
 COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = config_cliente.get("nombre_comercio", "ELECTRO+")
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
 
-# Función para formatear el logo destacando el símbolo o última letra con el color de marca
 def formatear_logo_html(nombre):
     if "+" in nombre:
         partes = nombre.rsplit("+", 1)
