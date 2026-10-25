@@ -313,6 +313,7 @@ def cargar_datos():
                     "envioTexto": str(p.get("envio_texto") or "").strip(),
                     "retiroTexto": str(p.get("retiro_texto") or "").strip(),
                     "fichaTecnica": str(p.get("ficha_tecnica") or "").strip(),
+                    "categoria": str(p.get("categoria") or "General").strip(),
                     "stock": int(p.get("stock", 0)),
                     "imagenUrl": p.get("imagen_url", "")
                 })
@@ -374,36 +375,27 @@ st.markdown("""
 if not productos:
     st.warning("Cargando productos o sin conexión con Supabase...")
 else:
+    # --- RENDERIZADO DINÁMICO DE CATEGORÍAS ---
     st.markdown("### Categorías")
-    cat_cols_top = st.columns(4)
-    with cat_cols_top[0]:
-        if st.button("Todas", key="cat_top_todas", use_container_width=True):
-            st.session_state.categoria_activa = "Todas"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
-    with cat_cols_top[1]:
-        if st.button("Hogar", key="cat_top_hogar", use_container_width=True):
-            st.session_state.categoria_activa = "Hogar"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
-    with cat_cols_top[2]:
-        if st.button("Lavado", key="cat_top_lavado", use_container_width=True):
-            st.session_state.categoria_activa = "Lavado"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
-    with cat_cols_top[3]:
-        if st.button("Cocina", key="cat_top_cocina", use_container_width=True):
-            st.session_state.categoria_activa = "Cocina"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
+    
+    # Extraer categorías únicas reales de la base de datos
+    categorias_unicas = ["Todas"] + sorted(list(set(p.get("categoria", "General") for p in productos if p.get("categoria"))))
+    
+    # Crear los botones de forma dinámica repartidos en columnas
+    cat_cols_top = st.columns(min(len(categorias_unicas), 6))
+    for idx_cat, cat_nombre in enumerate(categorias_unicas):
+        col_target = cat_cols_top[idx_cat % len(cat_cols_top)]
+        with col_target:
+            # Resaltar el botón si es la categoría activa
+            es_activa = (st.session_state.categoria_activa == cat_nombre)
+            btn_label = f"• {cat_nombre} •" if es_activa else cat_nombre
+            
+            if st.button(btn_label, key=f"cat_top_{cat_nombre}", use_container_width=True):
+                st.session_state.categoria_activa = cat_nombre
+                st.session_state.input_busqueda = ""
+                st.session_state.select_marca = "TODAS"
+                st.query_params.clear()
+                st.rerun()
 
     st.markdown("---")
 
@@ -417,10 +409,6 @@ else:
         marca_seleccionada = st.selectbox("Marca", marcas, key="select_marca")
 
     productos_filtrados = []
-    keywords_hogar = ["tv", "ventilador", "aire acondicionado"]
-    keywords_lavado = ["lavarropas", "aspiradora"]
-    keywords_cocina = ["cocina", "pava", "microondas", "heladera"]
-
     query = busqueda.lower().strip()
 
     for p in productos:
@@ -430,15 +418,10 @@ else:
         if prod_en_url:
             match = (prod_id.lower() == prod_en_url.lower())
         else:
-            match_categoria = True
-            cat = st.session_state.categoria_activa
-            if cat == "Hogar":
-                match_categoria = any(kw in nombre_prod for kw in keywords_hogar)
-            elif cat == "Lavado":
-                match_categoria = any(kw in nombre_prod for kw in keywords_lavado)
-            elif cat == "Cocina":
-                match_categoria = any(kw in nombre_prod for kw in keywords_cocina)
-
+            cat_prod = p.get("categoria", "General")
+            cat_activa = st.session_state.categoria_activa
+            
+            match_categoria = (cat_activa == "Todas" or cat_prod.lower() == cat_activa.lower())
             match_marca = (marca_seleccionada == "TODAS" or p.get("marca", "").strip().lower() == marca_seleccionada.lower())
             
             match_query = (
@@ -539,9 +522,8 @@ else:
                         if promo_box_html:
                             st.markdown(textwrap.dedent(promo_box_html).strip(), unsafe_allow_html=True)
 
-                        # FICHA TÉCNICA DESPLEGABLE EN LA TARJETA
                         if ficha_txt:
-                            with st.expander("📋 Ver Especificaciones"):
+                            with st.expander("📋 Ver Ficha Técnica / Especificaciones"):
                                 st.markdown(f"<div style='font-size:13px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
 
                         link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
@@ -613,8 +595,6 @@ else:
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
-    
-    # 1. REEMPLAZO DE TEXTO
     st.markdown("### Mi Carrito")
 
     if total_items == 0:
@@ -661,7 +641,6 @@ else:
                 mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: {subtotal_str}\n"
                 st.markdown("<hr style='margin: 8px 0; border-color: #e5e7eb;'>", unsafe_allow_html=True)
 
-            # 2. REEMPLAZO DE TEXTO DE TOTAL
             st.markdown(f"### Total de mi pedido: {total_str}")
             
             if total_ahorro > 0:
@@ -674,7 +653,6 @@ else:
             
             wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
             
-            # 3. REEMPLAZO DE TEXTO DE BOTÓN
             st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:16px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Pagar mi carrito por WhatsApp</a>', unsafe_allow_html=True)
             
             if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
@@ -682,39 +660,21 @@ else:
                 st.rerun()
 
     # -------------------------------------------------------------
-    # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
+    # 3. SECCIÓN DE CATEGORÍAS EN PIE DE PÁGINA (DINÁMICAS)
     # -------------------------------------------------------------
     st.markdown("---")
     st.markdown("### Categorías (Explorar más)")
-    cat_cols_bottom = st.columns(4)
-    with cat_cols_bottom[0]:
-        if st.button("Todas", key="cat_bot_todas", use_container_width=True):
-            st.session_state.categoria_activa = "Todas"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
-    with cat_cols_bottom[1]:
-        if st.button("Hogar", key="cat_bot_hogar", use_container_width=True):
-            st.session_state.categoria_activa = "Hogar"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
-    with cat_cols_bottom[2]:
-        if st.button("Lavado", key="cat_bot_lavado", use_container_width=True):
-            st.session_state.categoria_activa = "Lavado"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
-    with cat_cols_bottom[3]:
-        if st.button("Cocina", key="cat_bot_cocina", use_container_width=True):
-            st.session_state.categoria_activa = "Cocina"
-            st.session_state.input_busqueda = ""
-            st.session_state.select_marca = "TODAS"
-            st.query_params.clear()
-            st.rerun()
+    
+    cat_cols_bottom = st.columns(min(len(categorias_unicas), 6))
+    for idx_cat, cat_nombre in enumerate(categorias_unicas):
+        col_target = cat_cols_bottom[idx_cat % len(cat_cols_bottom)]
+        with col_target:
+            if st.button(cat_nombre, key=f"cat_bot_{cat_nombre}", use_container_width=True):
+                st.session_state.categoria_activa = cat_nombre
+                st.session_state.input_busqueda = ""
+                st.session_state.select_marca = "TODAS"
+                st.query_params.clear()
+                st.rerun()
 
     st.markdown(
         """
