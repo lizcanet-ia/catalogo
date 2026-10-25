@@ -92,19 +92,6 @@ st.markdown("""
         gap: 4px;
     }
     
-    .product-card {
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 18px;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.03);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 100%;
-        margin-bottom: 20px;
-    }
-    
     .badge-last {
         background-color: #fee2e2;
         color: #b91c1c;
@@ -231,25 +218,21 @@ st.markdown("""
         line-height: 1.4;
     }
 
-    /* ÁREA DE ESTADO DE CARRITO ADAPTADA A NUEVOS TAMAÑOS */
-    .cart-status-slot {
-        min-height: 54px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        margin-top: 6px;
+    .cart-status-box {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        padding: 8px 12px;
+        border-radius: 8px;
         margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .added-badge {
         color: #047857;
-        background-color: #d1fae5;
         font-size: 13px;
         font-weight: 700;
-        padding: 6px 10px;
-        border-radius: 6px;
-        display: inline-block;
-        width: fit-content;
     }
 
     .view-cart-link {
@@ -257,8 +240,6 @@ st.markdown("""
         font-size: 14px !important;
         font-weight: 700 !important;
         text-decoration: underline !important;
-        display: inline-block !important;
-        margin-top: 4px !important;
     }
 
     div[data-testid="stImage"] [data-testid="stElementActionButton"] {
@@ -542,9 +523,8 @@ else:
                         pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
                         discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
                     
-                    with st.container():
-                        st.markdown('<div class="product-card">', unsafe_allow_html=True)
-                        
+                    # USO DE CONTENEDOR NATIVO DE STREAMLIT (SIN DIVE VACIÓS AL FINAL)
+                    with st.container(border=True):
                         img_url = prod.get("imagenUrl", "")
                         if img_url:
                             st.image(img_url, use_column_width=True)
@@ -553,7 +533,6 @@ else:
 
                         st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
                         st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
-                        
                         st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
                         if promo_box_html:
@@ -566,7 +545,7 @@ else:
 
                         if stock <= 0:
                             badge_html = '<span class="badge-out">Sin stock</span>'
-                            st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                            st.markdown(f'<div style="margin-bottom:10px;">{badge_html}</div>', unsafe_allow_html=True)
                             
                             with st.expander("🔔 Avísame cuando ingrese"):
                                 with st.form(key=f"form_stock_{idx}_{prod_id}"):
@@ -599,16 +578,9 @@ else:
                             else:
                                 badge_html = '<span class="badge-ok">Disponible ✓</span>'
                             
-                            st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                            st.markdown(f'<div style="margin-bottom:10px;">{badge_html}</div>', unsafe_allow_html=True)
                             
-                            # SLOT RESERVADO DE ALTURA FIJA CON NUEVO TEXTO Y TAMAÑO "Ver mi carrito 🛒"
-                            if en_carrito:
-                                cart_slot_content = f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div><a href="#carrito-abajo" class="view-cart-link">Ver mi carrito 🛒</a>'
-                            else:
-                                cart_slot_content = '<div></div>'
-                                
-                            st.markdown(f'<div class="cart-status-slot">{cart_slot_content}</div>', unsafe_allow_html=True)
-
+                            # BOTÓN SIEMPRE NIVELADO
                             if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                                 if prod_id in st.session_state.carrito:
                                     st.session_state.carrito[prod_id]["cantidad"] += 1
@@ -624,8 +596,13 @@ else:
                                 
                                 st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
                                 st.rerun()
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
+
+                            # AVISO DE AGREGADO DEBAJO DEL BOTÓN (NO EMPUJA EL BOTÓN HACIA ABAJO)
+                            if en_carrito:
+                                st.markdown(
+                                    f'<div class="cart-status-box"><span class="added-badge">✓ Agregado ({qty_en_carrito})</span><a href="#carrito-abajo" class="view-cart-link">Ver mi carrito 🛒</a></div>',
+                                    unsafe_allow_html=True
+                                )
 
     # -------------------------------------------------------------
     # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
