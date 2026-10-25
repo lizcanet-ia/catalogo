@@ -113,7 +113,6 @@ st.markdown("""
         padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 8px;
     }
     
     .badge-few {
@@ -124,7 +123,6 @@ st.markdown("""
         padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 8px;
     }
     
     .badge-ok {
@@ -135,7 +133,6 @@ st.markdown("""
         padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 8px;
     }
     
     .badge-out {
@@ -146,7 +143,6 @@ st.markdown("""
         padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 8px;
     }
 
     .badge-discount {
@@ -212,6 +208,7 @@ st.markdown("""
         display: flex;
         flex-direction: column;
         gap: 8px;
+        min-height: 150px;
     }
 
     .promo-transfer {
@@ -232,16 +229,25 @@ st.markdown("""
         gap: 6px;
     }
 
+    /* ÁREA DE ESTADO DE CARRITO CON ALTURA FIJA RESERVADA */
+    .cart-status-slot {
+        min-height: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-top: 4px;
+        margin-bottom: 8px;
+    }
+
     .added-badge {
         color: #047857;
         background-color: #d1fae5;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        padding: 5px 10px;
+        padding: 4px 8px;
         border-radius: 6px;
         display: inline-block;
-        margin-bottom: 6px;
-        text-align: center;
+        width: fit-content;
     }
 
     div[data-testid="stImage"] [data-testid="stElementActionButton"] {
@@ -469,139 +475,147 @@ else:
         info_texto = f"Mostrando {len(productos_filtrados)} artículos" if query or prod_en_url else f"Mostrando {len(productos_filtrados)} artículos (Categoría: **{st.session_state.categoria_activa}**)"
         st.write(info_texto)
         
-        cols = st.columns(2)
-        for idx, prod in enumerate(productos_filtrados):
-            col = cols[idx % 2]
-            with col:
-                stock = prod.get("stock", 0)
-                prod_id = str(prod.get("cod", prod.get("producto")))
-                
-                en_carrito = prod_id in st.session_state.carrito
-                qty_en_carrito = st.session_state.carrito[prod_id]["cantidad"] if en_carrito else 0
-
-                precio_num = prod.get('precioVenta', 0)
-                precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
-                
-                desc_transf_pct = prod.get("descTransferenciaPct")
-                cuotas_num = prod.get("cuotasSinInteres")
-                envio_txt = prod.get("envioTexto")
-                retiro_txt = prod.get("retiroTexto")
-
-                promo_items = []
-                
-                if desc_transf_pct and desc_transf_pct > 0:
-                    precio_transf = precio_num * (1 - (desc_transf_pct / 100))
-                    precio_transf_str = f"$ {precio_transf:,.0f}".replace(",", ".")
-                    promo_items.append(
-                        f'<div class="promo-transfer">🏦 <strong>{int(desc_transf_pct)}% OFF</strong> pagando por Transferencia Bancaria<br><span style="font-size:13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span></div>'
-                    )
-                
-                if cuotas_num and cuotas_num > 0:
-                    monto_cuota = precio_num / cuotas_num
-                    monto_cuota_str = f"$ {monto_cuota:,.0f}".replace(",", ".")
-                    promo_items.append(
-                        f'<div class="promo-item">💳 <strong>{cuotas_num} cuotas sin interés</strong> de <strong>{monto_cuota_str}</strong></div>'
-                    )
-
-                if envio_txt:
-                    promo_items.append(f'<div class="promo-item">{envio_txt}</div>')
-
-                if retiro_txt:
-                    promo_items.append(f'<div class="promo-item">{retiro_txt}</div>')
-
-                promo_box_html = f'<div class="promo-box">{"".join(promo_items)}</div>' if promo_items else ""
-                
-                precio_ant = prod.get("precioAnterior")
-                old_price_html = ""
-                discount_badge_html = ""
-                
-                if precio_ant and precio_ant > precio_num:
-                    precio_ant_str = f"$ {precio_ant:,.0f}".replace(",", ".")
-                    old_price_html = f'<span class="old-price">{precio_ant_str}</span>'
+        # PROCESAMIENTO POR FILAS DE 2 PRODUCTOS PARA MANTENER LA CUADRÍCULA PERFECTA
+        for i in range(0, len(productos_filtrados), 2):
+            fila_productos = productos_filtrados[i:i+2]
+            cols = st.columns(2)
+            
+            for idx, prod in enumerate(fila_productos):
+                col = cols[idx]
+                with col:
+                    stock = prod.get("stock", 0)
+                    prod_id = str(prod.get("cod", prod.get("producto")))
                     
-                    pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
-                    discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
-                
-                with st.container():
-                    st.markdown('<div class="product-card">', unsafe_allow_html=True)
+                    en_carrito = prod_id in st.session_state.carrito
+                    qty_en_carrito = st.session_state.carrito[prod_id]["cantidad"] if en_carrito else 0
+
+                    precio_num = prod.get('precioVenta', 0)
+                    precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                     
-                    img_url = prod.get("imagenUrl", "")
-                    if img_url:
-                        st.image(img_url, use_column_width=True)
-                    else:
-                        st.markdown('<div style="height:160px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:12px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
+                    desc_transf_pct = prod.get("descTransferenciaPct")
+                    cuotas_num = prod.get("cuotasSinInteres")
+                    envio_txt = prod.get("envioTexto")
+                    retiro_txt = prod.get("retiroTexto")
 
-                    st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
-                    st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
+                    promo_items = []
                     
-                    st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
+                    if desc_transf_pct and desc_transf_pct > 0:
+                        precio_transf = precio_num * (1 - (desc_transf_pct / 100))
+                        precio_transf_str = f"$ {precio_transf:,.0f}".replace(",", ".")
+                        promo_items.append(
+                            f'<div class="promo-transfer">🏦 <strong>{int(desc_transf_pct)}% OFF</strong> pagando por Transferencia Bancaria<br><span style="font-size:13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span></div>'
+                        )
+                    
+                    if cuotas_num and cuotas_num > 0:
+                        monto_cuota = precio_num / cuotas_num
+                        monto_cuota_str = f"$ {monto_cuota:,.0f}".replace(",", ".")
+                        promo_items.append(
+                            f'<div class="promo-item">💳 <strong>{cuotas_num} cuotas sin interés</strong> de <strong>{monto_cuota_str}</strong></div>'
+                        )
 
-                    if promo_box_html:
-                        st.markdown(textwrap.dedent(promo_box_html).strip(), unsafe_allow_html=True)
+                    if envio_txt:
+                        promo_items.append(f'<div class="promo-item">{envio_txt}</div>')
 
-                    link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
-                    wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
-                    wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
-                    st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
+                    if retiro_txt:
+                        promo_items.append(f'<div class="promo-item">{retiro_txt}</div>')
 
-                    if stock <= 0:
-                        badge_html = '<span class="badge-out">Sin stock</span>'
-                        st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                    promo_box_html = f'<div class="promo-box">{"".join(promo_items)}</div>' if promo_items else ""
+                    
+                    precio_ant = prod.get("precioAnterior")
+                    old_price_html = ""
+                    discount_badge_html = ""
+                    
+                    if precio_ant and precio_ant > precio_num:
+                        precio_ant_str = f"$ {precio_ant:,.0f}".replace(",", ".")
+                        old_price_html = f'<span class="old-price">{precio_ant_str}</span>'
                         
-                        with st.expander("🔔 Avísame cuando ingrese"):
-                            with st.form(key=f"form_stock_{idx}_{prod_id}"):
-                                st.markdown("<p style='font-size:12px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
-                                nombre_lead = st.text_input("Tu Nombre", key=f"lead_nombre_{idx}_{prod_id}")
-                                tel_lead = st.text_input("Tu Teléfono / WhatsApp", key=f"lead_tel_{idx}_{prod_id}")
-                                
-                                enviar_lead = st.form_submit_button("📤 Registrarme", use_container_width=True)
-                                if enviar_lead:
-                                    if nombre_lead.strip() and tel_lead.strip():
-                                        try:
-                                            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-                                            supabase.table("stock_leads").insert({
-                                                "client_id": CLIENTE_ACTUAL,
-                                                "cod": prod_id,
-                                                "producto": prod.get("producto"),
-                                                "nombre": nombre_lead.strip(),
-                                                "telefono": tel_lead.strip()
-                                            }).execute()
-                                            st.success("¡Listo! Te avisaremos cuando ingrese.")
-                                        except Exception as e:
-                                            st.error("Hubo un error al registrar tus datos.")
-                                    else:
-                                        st.warning("Por favor completa ambos campos.")
-                    else:
-                        if stock == 1:
-                            badge_html = '<span class="badge-last">¡ÚLTIMA UNIDAD! 🔥</span>'
-                        elif stock < 3:
-                            badge_html = '<span class="badge-few">¡ÚLTIMAS UNIDADES! 🔥</span>'
+                        pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
+                        discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
+                    
+                    with st.container():
+                        st.markdown('<div class="product-card">', unsafe_allow_html=True)
+                        
+                        img_url = prod.get("imagenUrl", "")
+                        if img_url:
+                            st.image(img_url, use_column_width=True)
                         else:
-                            badge_html = '<span class="badge-ok">Disponible ✓</span>'
-                        
-                        st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
-                        
-                        if en_carrito:
-                            st.markdown(f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div>', unsafe_allow_html=True)
-                            st.markdown('<a href="#carrito-abajo" style="color: #047857; font-size: 13px; font-weight: 600; text-decoration: underline; display: block; margin-bottom: 8px;">Ver en carrito 🛒</a>', unsafe_allow_html=True)
+                            st.markdown('<div style="height:160px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:12px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
-                        if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
-                            if prod_id in st.session_state.carrito:
-                                st.session_state.carrito[prod_id]["cantidad"] += 1
-                            else:
-                                st.session_state.carrito[prod_id] = {
-                                    "producto": prod.get("producto"),
-                                    "marca": prod.get("marca"),
-                                    "precio": precio_num,
-                                    "precioAnterior": precio_ant,
-                                    "descTransferenciaPct": desc_transf_pct,
-                                    "cantidad": 1
-                                }
+                        st.markdown(f'<div class="product-brand">{prod.get("marca", "")}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="product-title">{prod.get("producto", "")}</div>', unsafe_allow_html=True)
+                        
+                        st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
+
+                        if promo_box_html:
+                            st.markdown(textwrap.dedent(promo_box_html).strip(), unsafe_allow_html=True)
+
+                        link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
+                        wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
+                        wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
+                        st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:bold; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
+
+                        if stock <= 0:
+                            badge_html = '<span class="badge-out">Sin stock</span>'
+                            st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
                             
-                            st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
-                            st.rerun()
-                    
-                    st.markdown('</div>', unsafe_allow_html=True)
+                            with st.expander("🔔 Avísame cuando ingrese"):
+                                with st.form(key=f"form_stock_{idx}_{prod_id}"):
+                                    st.markdown("<p style='font-size:12px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
+                                    nombre_lead = st.text_input("Tu Nombre", key=f"lead_nombre_{idx}_{prod_id}")
+                                    tel_lead = st.text_input("Tu Teléfono / WhatsApp", key=f"lead_tel_{idx}_{prod_id}")
+                                    
+                                    enviar_lead = st.form_submit_button("📤 Registrarme", use_container_width=True)
+                                    if enviar_lead:
+                                        if nombre_lead.strip() and tel_lead.strip():
+                                            try:
+                                                supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+                                                supabase.table("stock_leads").insert({
+                                                    "client_id": CLIENTE_ACTUAL,
+                                                    "cod": prod_id,
+                                                    "producto": prod.get("producto"),
+                                                    "nombre": nombre_lead.strip(),
+                                                    "telefono": tel_lead.strip()
+                                                }).execute()
+                                                st.success("¡Listo! Te avisaremos cuando ingrese.")
+                                            except Exception as e:
+                                                st.error("Hubo un error al registrar tus datos.")
+                                        else:
+                                            st.warning("Por favor completa ambos campos.")
+                        else:
+                            if stock == 1:
+                                badge_html = '<span class="badge-last">¡ÚLTIMA UNIDAD! 🔥</span>'
+                            elif stock < 3:
+                                badge_html = '<span class="badge-few">¡ÚLTIMAS UNIDADES! 🔥</span>'
+                            else:
+                                badge_html = '<span class="badge-ok">Disponible ✓</span>'
+                            
+                            st.markdown(f'<div>{badge_html}</div>', unsafe_allow_html=True)
+                            
+                            # SLOT RESERVADO DE ALTURA FIJA PARA MANTENER LA ALINEACIÓN
+                            if en_carrito:
+                                cart_slot_content = f'<div class="added-badge">✓ Agregado al carrito ({qty_en_carrito})</div><a href="#carrito-abajo" style="color: #047857; font-size: 12px; font-weight: 600; text-decoration: underline; display: block; margin-top:2px;">Ver en carrito 🛒</a>'
+                            else:
+                                cart_slot_content = '<div></div>'
+                                
+                            st.markdown(f'<div class="cart-status-slot">{cart_slot_content}</div>', unsafe_allow_html=True)
+
+                            if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
+                                if prod_id in st.session_state.carrito:
+                                    st.session_state.carrito[prod_id]["cantidad"] += 1
+                                else:
+                                    st.session_state.carrito[prod_id] = {
+                                        "producto": prod.get("producto"),
+                                        "marca": prod.get("marca"),
+                                        "precio": precio_num,
+                                        "precioAnterior": precio_ant,
+                                        "descTransferenciaPct": desc_transf_pct,
+                                        "cantidad": 1
+                                    }
+                                
+                                st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
+                                st.rerun()
+                        
+                        st.markdown('</div>', unsafe_allow_html=True)
 
     # -------------------------------------------------------------
     # 2. SECCIÓN DEL CARRITO EN EL PIE DE PÁGINA
