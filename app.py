@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client
 import urllib.parse
+import textwrap
 
 st.set_page_config(
     page_title="ELECTRO+",
@@ -354,20 +355,20 @@ with col_cart:
 st.markdown("")
 
 st.markdown("""
-    <div class="benefits-bar">
-        <div class="benefit-item">
-            <span style="font-size: 18px;">🏪</span>
-            <span>RETIRÁ GRATIS EN SUCURSAL</span>
-        </div>
-        <div class="benefit-item">
-            <span style="font-size: 18px;">🎧</span>
-            <span>VENTA POR WHATSAPP</span>
-        </div>
-        <div class="benefit-item">
-            <span style="font-size: 18px;">📦</span>
-            <span>ENVÍOS A TODO EL PAÍS</span>
-        </div>
+<div class="benefits-bar">
+    <div class="benefit-item">
+        <span style="font-size: 18px;">🏪</span>
+        <span>RETIRÁ GRATIS EN SUCURSAL</span>
     </div>
+    <div class="benefit-item">
+        <span style="font-size: 18px;">🎧</span>
+        <span>VENTA POR WHATSAPP</span>
+    </div>
+    <div class="benefit-item">
+        <span style="font-size: 18px;">📦</span>
+        <span>ENVÍOS A TODO EL PAÍS</span>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 if not productos:
@@ -480,47 +481,32 @@ else:
                 precio_num = prod.get('precioVenta', 0)
                 precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
-                # --- PROMOCIONES DINÁMICAS Y CONFIGURABLES ---
                 desc_transf_pct = prod.get("descTransferenciaPct")
                 cuotas_num = prod.get("cuotasSinInteres")
                 envio_txt = prod.get("envioTexto")
 
-                promo_items_html = ""
+                promo_items = []
                 
                 if desc_transf_pct and desc_transf_pct > 0:
                     precio_transf = precio_num * (1 - (desc_transf_pct / 100))
                     precio_transf_str = f"$ {precio_transf:,.0f}".replace(",", ".")
-                    promo_items_html += f"""
-                        <div class="promo-transfer">
-                            🏦 <strong>{int(desc_transf_pct)}% OFF</strong> pagando por Transferencia Bancaria<br>
-                            <span style="font-size: 13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span>
-                        </div>
-                    """
+                    promo_items.append(
+                        f'<div class="promo-transfer">🏦 <strong>{int(desc_transf_pct)}% OFF</strong> pagando por Transferencia Bancaria<br><span style="font-size:13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span></div>'
+                    )
                 
                 if cuotas_num and cuotas_num > 0:
                     monto_cuota = precio_num / cuotas_num
                     monto_cuota_str = f"$ {monto_cuota:,.0f}".replace(",", ".")
-                    promo_items_html += f"""
-                        <div class="promo-item">
-                            💳 <strong>{cuotas_num} cuotas sin interés</strong> de <strong>{monto_cuota_str}</strong>
-                        </div>
-                    """
+                    promo_items.append(
+                        f'<div class="promo-item">💳 <strong>{cuotas_num} cuotas sin interés</strong> de <strong>{monto_cuota_str}</strong></div>'
+                    )
 
                 if envio_txt:
-                    promo_items_html += f"""
-                        <div class="promo-item">
-                            {envio_txt}
-                        </div>
-                    """
+                    promo_items.append(f'<div class="promo-item">{envio_txt}</div>')
 
-                promo_items_html += """
-                    <div class="promo-item">
-                        🏪 Disponible para <strong>retiro en sucursal</strong>
-                    </div>
-                """
+                promo_items.append('<div class="promo-item">🏪 Disponible para <strong>retiro en sucursal</strong></div>')
 
-                promo_box_html = f'<div class="promo-box">{promo_items_html}</div>' if promo_items_html else ""
-                # ------------------------------------------------
+                promo_box_html = f'<div class="promo-box">{"".join(promo_items)}</div>' if promo_items else ""
                 
                 precio_ant = prod.get("precioAnterior")
                 old_price_html = ""
@@ -548,7 +534,8 @@ else:
                     st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
                     if promo_box_html:
-                        st.markdown(promo_box_html, unsafe_allow_html=True)
+                        # RENDER SANITIZADO SIN SANGRÍAS
+                        st.markdown(textwrap.dedent(promo_box_html).strip(), unsafe_allow_html=True)
 
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
                     wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
@@ -561,7 +548,7 @@ else:
                         
                         with st.expander("🔔 Avísame cuando ingrese"):
                             with st.form(key=f"form_stock_{idx}_{prod_id}"):
-                                st.markdown(f"<p style='font-size:12px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
+                                st.markdown("<p style='font-size:12px; color:#4b5563; margin-bottom:4px;'>Dejanos tus datos para avisarte ni bien entre stock de este producto.</p>", unsafe_allow_html=True)
                                 nombre_lead = st.text_input("Tu Nombre", key=f"lead_nombre_{idx}_{prod_id}")
                                 tel_lead = st.text_input("Tu Teléfono / WhatsApp", key=f"lead_tel_{idx}_{prod_id}")
                                 
