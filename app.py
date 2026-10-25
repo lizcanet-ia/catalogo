@@ -38,7 +38,8 @@ def cargar_config_cliente(slug_cliente):
                 "client_id": row.get("client_id", slug_cliente),
                 "nombre_comercio": row.get("nombre_comercio") or slug_cliente.replace("_", " ").upper(),
                 "whatsapp_numero": row.get("whatsapp_numero") or "5491165295937",
-                "color_primario": row.get("color_primario") or "#7c3aed"
+                "color_primario": row.get("color_primario") or "#7c3aed",
+                "color_fondo": row.get("color_fondo") or "#f4f5f7" # LECTURA DINÁMICA DE SUPABASE
             }
         
         if slug_cliente == "electro_plus":
@@ -47,7 +48,8 @@ def cargar_config_cliente(slug_cliente):
                 "client_id": "electro_plus",
                 "nombre_comercio": "ELECTRO+",
                 "whatsapp_numero": "5491165295937",
-                "color_primario": "#7c3aed"
+                "color_primario": "#7c3aed",
+                "color_fondo": "#f4f5f7"
             }
             
         return {"encontrado": False}
@@ -136,9 +138,7 @@ if not config_cliente.get("encontrado"):
 COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = config_cliente.get("nombre_comercio", "ELECTRO+")
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
-
-# CONFIGURACIÓN DE COLOR DE FONDO ESPECÍFICO POR CLIENTE
-COLOR_FONDO_MAIN = "#FAF0E6" if CLIENTE_SOLICITADO == "patitas_pet" else "#f4f5f7"
+COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7") # RECUPERADO DE SUPABASE
 
 def formatear_logo_html(nombre):
     if "+" in nombre:
