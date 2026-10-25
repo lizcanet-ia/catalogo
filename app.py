@@ -80,6 +80,10 @@ def cargar_productos_cliente(slug_cliente):
         if data:
             productos = []
             for p in data:
+                raw_img = str(p.get("imagen_url") or "").strip()
+                # Soporte para múltiples imágenes separadas por comas (,)
+                imagenes = [img.strip() for img in raw_img.split(",") if img.strip()] if raw_img else []
+
                 productos.append({
                     "cod": p.get("cod"),
                     "producto": p.get("producto"),
@@ -93,7 +97,7 @@ def cargar_productos_cliente(slug_cliente):
                     "fichaTecnica": str(p.get("ficha_tecnica") or "").strip(),
                     "categoria": str(p.get("categoria") or "General").strip(),
                     "stock": int(p.get("stock", 0)),
-                    "imagenUrl": p.get("imagen_url", "")
+                    "imagenes": imagenes
                 })
             return productos
         return []
@@ -152,10 +156,8 @@ def formatear_logo_html(nombre):
 
 LOGO_HTML = formatear_logo_html(NOMBRE_MARCA)
 
-# INYECCIÓN ROBUSTA DE ESTILOS CSS CON !IMPORTANT SOBRE LOS CONTENEDORES RAIZ DE STREAMLIT
 st.markdown(f"""
     <style>
-    /* Forzar fondo raíz de Streamlit */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
         background-color: {COLOR_FONDO_MAIN} !important;
     }}
@@ -431,6 +433,9 @@ if "carrito" not in st.session_state:
 if "categoria_activa" not in st.session_state:
     st.session_state.categoria_activa = "Todas"
 
+if "foto_activa_dict" not in st.session_state:
+    st.session_state.foto_activa_dict = {}
+
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
@@ -474,7 +479,8 @@ st.markdown("""
 if not productos:
     st.warning(f"No hay productos cargados o activos para el comercio: '{NOMBRE_MARCA}'.")
 else:
-    st.markdown("### Categorías")
+    # --- REDISEÑO ELEGANTE Y VISUAL DE CATEGORÍAS ---
+    st.markdown("### 📂 Categorías")
     
     categorias_unicas = ["Todas"] + sorted(list(set(p.get("categoria", "General") for p in productos if p.get("categoria"))))
     
@@ -483,9 +489,12 @@ else:
         col_target = cat_cols_top[idx_cat % len(cat_cols_top)]
         with col_target:
             es_activa = (st.session_state.categoria_activa == cat_nombre)
-            btn_label = f"• {cat_nombre} •" if es_activa else cat_nombre
             
-            if st.button(btn_label, key=f"cat_top_{cat_nombre}", use_container_width=True):
+            # Etiqueta visual refinada
+            btn_label = f"✨ {cat_nombre}" if es_activa else cat_nombre
+            
+            # Botón con jerarquía
+            if st.button(btn_label, key=f"cat_top_{cat_nombre}", use_container_width=True, type="primary" if es_activa else "secondary"):
                 st.session_state.categoria_activa = cat_nombre
                 st.session_state.input_busqueda = ""
                 st.session_state.select_marca = "TODAS"
@@ -604,9 +613,28 @@ else:
                         discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
                     
                     with st.container(border=True):
-                        img_url = prod.get("imagenUrl", "")
-                        if img_url:
-                            st.image(img_url, use_column_width=True)
+                        # --- COMPONENTE DE GALERÍA DE MÚLTIPLES FOTOS ---
+                        lista_imagenes = prod.get("imagenes", [])
+                        
+                        if lista_imagenes:
+                            # Foto seleccionada por el usuario (o la primera por defecto)
+                            idx_foto_actual = st.session_state.foto_activa_dict.get(prod_id, 0)
+                            if idx_foto_actual >= len(lista_imagenes):
+                                idx_foto_actual = 0
+                                
+                            foto_actual_url = lista_imagenes[idx_foto_actual]
+                            st.image(foto_actual_url, use_column_width=True)
+                            
+                            # Si tiene más de 1 imagen, mostramos el mini selector de fotos abajo
+                            if len(lista_imagenes) > 1:
+                                thumb_cols = st.columns(min(len(lista_imagenes), 5))
+                                for img_i, img_u in enumerate(lista_imagenes):
+                                    with thumb_cols[img_i % 5]:
+                                        es_foto_sel = (img_i == idx_foto_actual)
+                                        label_btn = f"📷 {img_i+1}" if not es_foto_sel else f"✅ {img_i+1}"
+                                        if st.button(label_btn, key=f"thumb_{prod_id}_{img_i}", use_container_width=True):
+                                            st.session_state.foto_activa_dict[prod_id] = img_i
+                                            st.rerun()
                         else:
                             st.markdown('<div style="height:160px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#9ca3af; font-size:13px; border-radius:6px; margin-bottom:8px;">Sin imagen</div>', unsafe_allow_html=True)
 
@@ -758,13 +786,15 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS EN PIE DE PÁGINA
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### Categorías (Explorar más)")
+    st.markdown("### Explorar más")
     
     cat_cols_bottom = st.columns(min(len(categorias_unicas), 6))
     for idx_cat, cat_nombre in enumerate(categorias_unicas):
         col_target = cat_cols_bottom[idx_cat % len(cat_cols_bottom)]
         with col_target:
-            if st.button(cat_nombre, key=f"cat_bot_{cat_nombre}", use_container_width=True):
+            es_activa = (st.session_state.categoria_activa == cat_nombre)
+            btn_label = f"✨ {cat_nombre}" if es_activa else cat_nombre
+            if st.button(btn_label, key=f"cat_bot_{cat_nombre}", use_container_width=True, type="primary" if es_activa else "secondary"):
                 st.session_state.categoria_activa = cat_nombre
                 st.session_state.input_busqueda = ""
                 st.session_state.select_marca = "TODAS"
