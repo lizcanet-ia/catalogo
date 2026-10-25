@@ -2,7 +2,6 @@ import streamlit as st
 from supabase import create_client
 import urllib.parse
 
-# Configuración de la página en modo "wide"
 st.set_page_config(
     page_title="ELECTRO+",
     page_icon="🛒",
@@ -10,7 +9,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilos CSS avanzados con caja de promociones estilo e-commerce
 st.markdown("""
     <style>
     .block-container {
@@ -203,7 +201,6 @@ st.markdown("""
         gap: 4px;
     }
 
-    /* Caja de Promociones inspirada en Frávega */
     .promo-box {
         background-color: #f9fafb;
         border: 1px solid #e5e7eb;
@@ -234,10 +231,6 @@ st.markdown("""
         gap: 6px;
     }
 
-    .promo-item strong {
-        color: #111827;
-    }
-    
     .added-badge {
         color: #047857;
         background-color: #d1fae5;
@@ -316,6 +309,9 @@ def cargar_datos():
                     "marca": p.get("marca"),
                     "precioVenta": float(p.get("precio_venta", 0)),
                     "precioAnterior": float(p.get("precio_anterior")) if p.get("precio_anterior") is not None else None,
+                    "descTransferenciaPct": float(p.get("descuento_transferencia_pct")) if p.get("descuento_transferencia_pct") is not None else None,
+                    "cuotasSinInteres": int(p.get("cuotas_sin_interes")) if p.get("cuotas_sin_interes") is not None else None,
+                    "envioTexto": str(p.get("envio_texto") or "").strip(),
                     "stock": int(p.get("stock", 0)),
                     "imagenUrl": p.get("imagen_url", "")
                 })
@@ -484,12 +480,47 @@ else:
                 precio_num = prod.get('precioVenta', 0)
                 precio_str = f"$ {precio_num:,.0f}".replace(",", ".")
                 
-                # CÁLCULOS DE PROMOCIONES BANCARIAS
-                precio_transferencia = precio_num * 0.80
-                precio_transf_str = f"$ {precio_transferencia:,.0f}".replace(",", ".")
+                # --- PROMOCIONES DINÁMICAS Y CONFIGURABLES ---
+                desc_transf_pct = prod.get("descTransferenciaPct")
+                cuotas_num = prod.get("cuotasSinInteres")
+                envio_txt = prod.get("envioTexto")
+
+                promo_items_html = ""
                 
-                cuota_6 = precio_num / 6
-                cuota_6_str = f"$ {cuota_6:,.0f}".replace(",", ".")
+                if desc_transf_pct and desc_transf_pct > 0:
+                    precio_transf = precio_num * (1 - (desc_transf_pct / 100))
+                    precio_transf_str = f"$ {precio_transf:,.0f}".replace(",", ".")
+                    promo_items_html += f"""
+                        <div class="promo-transfer">
+                            🏦 <strong>{int(desc_transf_pct)}% OFF</strong> pagando por Transferencia Bancaria<br>
+                            <span style="font-size: 13px;">Total con transferencia: <strong>{precio_transf_str}</strong></span>
+                        </div>
+                    """
+                
+                if cuotas_num and cuotas_num > 0:
+                    monto_cuota = precio_num / cuotas_num
+                    monto_cuota_str = f"$ {monto_cuota:,.0f}".replace(",", ".")
+                    promo_items_html += f"""
+                        <div class="promo-item">
+                            💳 <strong>{cuotas_num} cuotas sin interés</strong> de <strong>{monto_cuota_str}</strong>
+                        </div>
+                    """
+
+                if envio_txt:
+                    promo_items_html += f"""
+                        <div class="promo-item">
+                            {envio_txt}
+                        </div>
+                    """
+
+                promo_items_html += """
+                    <div class="promo-item">
+                        🏪 Disponible para <strong>retiro en sucursal</strong>
+                    </div>
+                """
+
+                promo_box_html = f'<div class="promo-box">{promo_items_html}</div>' if promo_items_html else ""
+                # ------------------------------------------------
                 
                 precio_ant = prod.get("precioAnterior")
                 old_price_html = ""
@@ -516,24 +547,9 @@ else:
                     
                     st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
-                    # CAJA DE BENEFICIOS Y PROMOCIONES (ESTILO FRÁVEGA)
-                    st.markdown(f"""
-                        <div class="promo-box">
-                            <div class="promo-transfer">
-                                🏦 <strong>20% OFF</strong> Transferencia Bancaria<br>
-                                <span style="font-size: 13px;">Con transferencia: <strong>{precio_transf_str}</strong></span>
-                            </div>
-                            <div class="promo-item">
-                                💳 <strong>6 cuotas sin interés</strong> de <strong>{cuota_6_str}</strong> con VISA
-                            </div>
-                            <div class="promo-item">
-                                📦 <strong>Envío GRATIS</strong> a Capital Federal
-                            </div>
-                            <div class="promo-item">
-                                🏪 Disponible para <strong>retiro en sucursal</strong>
-                            </div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    # RENDER DE LA CAJA DE PROMOCIONES DINÁMICA
+                    if promo_box_html:
+                        st.markdown(promo_box_html, unsafe_allow_html=True)
 
                     link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
                     wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
@@ -590,6 +606,7 @@ else:
                                     "marca": prod.get("marca"),
                                     "precio": precio_num,
                                     "precioAnterior": precio_ant,
+                                    "descTransferenciaPct": desc_transf_pct,
                                     "cantidad": 1
                                 }
                             
@@ -603,14 +620,11 @@ else:
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### Mi Carrito")
+    st.markdown("### Carrito de Compras y Pedido")
 
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
     else:
-        total_transferencia = total_general * 0.80
-        total_transf_str = f"$ {total_transferencia:,.0f}".replace(",", ".")
-
         st.markdown(f"""
             <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <span style="font-weight: bold; font-size: 15px;">🛒 Total de Artículos: {total_items}</span>
@@ -626,8 +640,8 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-        with st.expander("📦 Detalle completo del pedido", expanded=True):
-            mensaje_wa = "Hola, quiero realizar el siguiente pedido:\n\n"
+        with st.expander("📦 Ver detalle completo del pedido y enviar a WhatsApp", expanded=True):
+            mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
             
             for prod_id, item in list(st.session_state.carrito.items()):
                 subtotal = item["precio"] * item["cantidad"]
@@ -656,19 +670,18 @@ else:
                 st.markdown("<hr style='margin: 8px 0; border-color: #e5e7eb;'>", unsafe_allow_html=True)
 
             st.markdown(f"### Total de lista / Tarjeta: $ {total_general:,.0f}".replace(",", "."))
-            st.markdown(f"<p style='color:#065f46; font-weight:bold; font-size:16px;'>🏦 Total pagando por Transferencia (20% OFF): {total_transf_str}</p>", unsafe_allow_html=True)
             
             if total_ahorro > 0:
                 ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
                 st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:14px; margin-top:-10px;'>🎉 Ahorro total acumulado en ofertas: {ahorro_str}</p>", unsafe_allow_html=True)
                 mensaje_wa += f"\n🎉 ¡Ahorro total en ofertas: {ahorro_str}!"
 
-            mensaje_wa += f"\n\nTotal precio Lista/Tarjeta: $ {total_general:,.0f}".replace(",", ".")
-            mensaje_wa += f"\nTotal con Transferencia (20% OFF): {total_transf_str}"
+            mensaje_wa += f"\n\nTotal estimado Lista/Tarjeta: $ {total_general:,.0f}".replace(",", ".")
+            mensaje_wa += f"\n* Pedido sujeto a confirmación de stock por parte del comercio."
             
             wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
             
-            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Pagar pedido por WhatsApp</a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
             
             if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
                 st.session_state.carrito = {}
@@ -678,7 +691,7 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### (Explorar más Categorias)")
+    st.markdown("### Categorías (Explorar más)")
     cat_cols_bottom = st.columns(4)
     with cat_cols_bottom[0]:
         if st.button("Todas", key="cat_bot_todas", use_container_width=True):
