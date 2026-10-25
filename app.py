@@ -312,6 +312,7 @@ def cargar_datos():
                     "cuotasSinInteres": int(p.get("cuotas_sin_interes")) if p.get("cuotas_sin_interes") is not None else None,
                     "envioTexto": str(p.get("envio_texto") or "").strip(),
                     "retiroTexto": str(p.get("retiro_texto") or "").strip(),
+                    "fichaTecnica": str(p.get("ficha_tecnica") or "").strip(),
                     "stock": int(p.get("stock", 0)),
                     "imagenUrl": p.get("imagen_url", "")
                 })
@@ -487,6 +488,7 @@ else:
                     cuotas_num = prod.get("cuotasSinInteres")
                     envio_txt = prod.get("envioTexto")
                     retiro_txt = prod.get("retiroTexto")
+                    ficha_txt = prod.get("fichaTecnica")
 
                     promo_items = []
                     
@@ -523,7 +525,6 @@ else:
                         pct_descuento = round(((precio_ant - precio_num) / precio_ant) * 100)
                         discount_badge_html = f'<span class="badge-discount">{pct_descuento}% OFF</span>'
                     
-                    # USO DE CONTENEDOR NATIVO DE STREAMLIT (SIN DIVE VACIÓS AL FINAL)
                     with st.container(border=True):
                         img_url = prod.get("imagenUrl", "")
                         if img_url:
@@ -538,10 +539,15 @@ else:
                         if promo_box_html:
                             st.markdown(textwrap.dedent(promo_box_html).strip(), unsafe_allow_html=True)
 
+                        # FICHA TÉCNICA DESPLEGABLE EN LA TARJETA
+                        if ficha_txt:
+                            with st.expander("📋 Ver Ficha Técnica / Especificaciones"):
+                                st.markdown(f"<div style='font-size:13px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
+
                         link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
                         wa_share_msg = f"¡Mirá este producto en Electro+: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                         wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
-                        st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:10px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:bold; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
+                        st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:10px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:bold; margin-bottom:10px; margin-top:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
                         if stock <= 0:
                             badge_html = '<span class="badge-out">Sin stock</span>'
@@ -580,7 +586,6 @@ else:
                             
                             st.markdown(f'<div style="margin-bottom:10px;">{badge_html}</div>', unsafe_allow_html=True)
                             
-                            # BOTÓN SIEMPRE NIVELADO
                             if st.button("🛒 Agregar al carrito", key=f"btn_add_{idx}_{prod_id}", use_container_width=True):
                                 if prod_id in st.session_state.carrito:
                                     st.session_state.carrito[prod_id]["cantidad"] += 1
@@ -597,7 +602,6 @@ else:
                                 st.toast(f"¡Agregado al carrito: {prod.get('producto')}!", icon="🛒")
                                 st.rerun()
 
-                            # AVISO DE AGREGADO DEBAJO DEL BOTÓN (NO EMPUJA EL BOTÓN HACIA ABAJO)
                             if en_carrito:
                                 st.markdown(
                                     f'<div class="cart-status-box"><span class="added-badge">✓ Agregado ({qty_en_carrito})</span><a href="#carrito-abajo" class="view-cart-link">Ver mi carrito 🛒</a></div>',
@@ -609,7 +613,9 @@ else:
     # -------------------------------------------------------------
     st.markdown('<div id="carrito-abajo"></div>', unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### Carrito de Compras y Pedido")
+    
+    # 1. REEMPLAZO DE TEXTO
+    st.markdown("### Mi Carrito")
 
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
@@ -655,19 +661,21 @@ else:
                 mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: {subtotal_str}\n"
                 st.markdown("<hr style='margin: 8px 0; border-color: #e5e7eb;'>", unsafe_allow_html=True)
 
-            st.markdown(f"### Total de lista / Tarjeta: {total_str}")
+            # 2. REEMPLAZO DE TEXTO DE TOTAL
+            st.markdown(f"### Total de mi pedido: {total_str}")
             
             if total_ahorro > 0:
                 ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
                 st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:15px; margin-top:-10px;'>🎉 Ahorro total acumulado en ofertas: {ahorro_str}</p>", unsafe_allow_html=True)
                 mensaje_wa += f"\n🎉 ¡Ahorro total en ofertas: {ahorro_str}!"
 
-            mensaje_wa += f"\n\nTotal estimado Lista/Tarjeta: {total_str}"
+            mensaje_wa += f"\n\nTotal estimado mi pedido: {total_str}"
             mensaje_wa += f"\n* Pedido sujeto a confirmación de stock por parte del comercio."
             
             wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
             
-            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:16px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
+            # 3. REEMPLAZO DE TEXTO DE BOTÓN
+            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:16px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Pagar mi carrito por WhatsApp</a>', unsafe_allow_html=True)
             
             if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
                 st.session_state.carrito = {}
