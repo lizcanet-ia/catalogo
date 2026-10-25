@@ -39,7 +39,7 @@ def cargar_config_cliente(slug_cliente):
                 "nombre_comercio": row.get("nombre_comercio") or slug_cliente.replace("_", " ").upper(),
                 "whatsapp_numero": row.get("whatsapp_numero") or "5491165295937",
                 "color_primario": row.get("color_primario") or "#7c3aed",
-                "color_fondo": row.get("color_fondo") or "#f4f5f7" # LECTURA DINÁMICA DE SUPABASE
+                "color_fondo": row.get("color_fondo") or "#f4f5f7"
             }
         
         if slug_cliente == "electro_plus":
@@ -138,7 +138,7 @@ if not config_cliente.get("encontrado"):
 COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = config_cliente.get("nombre_comercio", "ELECTRO+")
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
-COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7") # RECUPERADO DE SUPABASE
+COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7")
 
 def formatear_logo_html(nombre):
     if "+" in nombre:
@@ -152,23 +152,25 @@ def formatear_logo_html(nombre):
 
 LOGO_HTML = formatear_logo_html(NOMBRE_MARCA)
 
+# INYECCIÓN ROBUSTA DE ESTILOS CSS CON !IMPORTANT SOBRE LOS CONTENEDORES RAIZ DE STREAMLIT
 st.markdown(f"""
     <style>
+    /* Forzar fondo raíz de Streamlit */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
+        background-color: {COLOR_FONDO_MAIN} !important;
+    }}
+
     .block-container {{
         max-width: 95% !important;
         padding-top: 2rem !important;
         padding-bottom: 3rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
+        background-color: transparent !important;
     }}
 
     html, body, [class*="css"] {{
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-    }}
-    
-    .main {{
-        background-color: {COLOR_FONDO_MAIN};
-        padding-bottom: 60px;
     }}
     
     html {{
