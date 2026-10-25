@@ -547,7 +547,6 @@ else:
                     
                     st.markdown(f'<div class="product-price">{old_price_html}<span>{precio_str}</span>{discount_badge_html}</div>', unsafe_allow_html=True)
 
-                    # RENDER DE LA CAJA DE PROMOCIONES DINÁMICA (CON UNSAFE_ALLOW_HTML=TRUE)
                     if promo_box_html:
                         st.markdown(promo_box_html, unsafe_allow_html=True)
 
@@ -625,6 +624,107 @@ else:
     if total_items == 0:
         st.info("Tu carrito está vacío. ¡Agregá productos desde el catálogo para armar tu pedido!")
     else:
-        st.markdown(f"""
-            <div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-align: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <span style="font-weight: bold; font-size: 15px
+        total_str = f"$ {total_general:,.0f}".replace(",", ".")
+        
+        banner_total_html = f'<div style="background-color: #047857; color: white; padding: 12px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span style="font-weight: bold; font-size: 15px;">🛒 Total de Artículos: {total_items}</span><span style="font-weight: bold; font-size: 15px;">Total: {total_str}</span></div>'
+        st.markdown(banner_total_html, unsafe_allow_html=True)
+
+        if total_ahorro > 0:
+            ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
+            banner_ahorro_html = f'<div style="background-color: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 10px 14px; border-radius: 8px; font-weight: bold; font-size: 14px; text-align: center; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">🔥 ¡Estás ahorrando {ahorro_str} en esta compra por precios en oferta!</div>'
+            st.markdown(banner_ahorro_html, unsafe_allow_html=True)
+
+        with st.expander("📦 Ver detalle completo del pedido y enviar a WhatsApp", expanded=True):
+            mensaje_wa = "Hola, quiero realizar el siguiente pedido desde el catálogo:\n\n"
+            
+            for prod_id, item in list(st.session_state.carrito.items()):
+                subtotal = item["precio"] * item["cantidad"]
+                subtotal_str = f"$ {subtotal:,.0f}".replace(",", ".")
+                
+                c_info, c_qty, c_del = st.columns([2.5, 2, 1])
+                with c_info:
+                    item_html = f"**{item['producto']}**<br><span style='font-size:12px; color:#7c3aed; font-weight:600;'>{item['marca']}</span><br><span style='font-size:13px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
+                    st.markdown(item_html, unsafe_allow_html=True)
+                with c_qty:
+                    nueva_cantidad = st.number_input(
+                        "Cant",
+                        min_value=1,
+                        max_value=99,
+                        value=item["cantidad"],
+                        key=f"qty_input_{prod_id}",
+                        label_visibility="collapsed"
+                    )
+                    if nueva_cantidad != item["cantidad"]:
+                        item["cantidad"] = nueva_cantidad
+                        st.rerun()
+                with c_del:
+                    if st.button("🗑️", key=f"foot_del_{prod_id}", use_container_width=True):
+                        del st.session_state.carrito[prod_id]
+                        st.rerun()
+                
+                mensaje_wa += f"• {item['cantidad']}x {item['producto']} ({item['marca']}) - Subtotal: {subtotal_str}\n"
+                st.markdown("<hr style='margin: 8px 0; border-color: #e5e7eb;'>", unsafe_allow_html=True)
+
+            st.markdown(f"### Total de lista / Tarjeta: {total_str}")
+            
+            if total_ahorro > 0:
+                ahorro_str = f"$ {total_ahorro:,.0f}".replace(",", ".")
+                st.markdown(f"<p style='color:#059669; font-weight:bold; font-size:14px; margin-top:-10px;'>🎉 Ahorro total acumulado en ofertas: {ahorro_str}</p>", unsafe_allow_html=True)
+                mensaje_wa += f"\n🎉 ¡Ahorro total en ofertas: {ahorro_str}!"
+
+            mensaje_wa += f"\n\nTotal estimado Lista/Tarjeta: {total_str}"
+            mensaje_wa += f"\n* Pedido sujeto a confirmación de stock por parte del comercio."
+            
+            wa_url = f"https://wa.me/5491165295937?text={urllib.parse.quote(mensaje_wa)}"
+            
+            st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:15px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido completo por WhatsApp</a>', unsafe_allow_html=True)
+            
+            if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
+                st.session_state.carrito = {}
+                st.rerun()
+
+    # -------------------------------------------------------------
+    # 3. SECCIÓN DE CATEGORÍAS (Al final de la página)
+    # -------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("### Categorías (Explorar más)")
+    cat_cols_bottom = st.columns(4)
+    with cat_cols_bottom[0]:
+        if st.button("Todas", key="cat_bot_todas", use_container_width=True):
+            st.session_state.categoria_activa = "Todas"
+            st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
+            st.query_params.clear()
+            st.rerun()
+    with cat_cols_bottom[1]:
+        if st.button("Hogar", key="cat_bot_hogar", use_container_width=True):
+            st.session_state.categoria_activa = "Hogar"
+            st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
+            st.query_params.clear()
+            st.rerun()
+    with cat_cols_bottom[2]:
+        if st.button("Lavado", key="cat_bot_lavado", use_container_width=True):
+            st.session_state.categoria_activa = "Lavado"
+            st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
+            st.query_params.clear()
+            st.rerun()
+    with cat_cols_bottom[3]:
+        if st.button("Cocina", key="cat_bot_cocina", use_container_width=True):
+            st.session_state.categoria_activa = "Cocina"
+            st.session_state.input_busqueda = ""
+            st.session_state.select_marca = "TODAS"
+            st.query_params.clear()
+            st.rerun()
+
+    st.markdown(
+        """
+        <div style="text-align: center; margin-top: 25px; margin-bottom: 20px;">
+            <a href="#top-inicio" style="display: inline-block; background-color: #ffffff; color: #374151; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold; border: 1px solid #d1d5db; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                ⬆️ Volver arriba
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
