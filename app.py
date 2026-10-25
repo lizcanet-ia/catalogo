@@ -541,7 +541,7 @@ else:
 
                         # FICHA TÉCNICA DESPLEGABLE EN LA TARJETA
                         if ficha_txt:
-                            with st.expander("📋 Ver Ficha Técnica / Especificaciones"):
+                            with st.expander("📋 Ver Especificaciones"):
                                 st.markdown(f"<div style='font-size:13px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
 
                         link_directo_producto = f"{URL_BASE_APP}/?prod={prod_id}"
