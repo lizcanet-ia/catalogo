@@ -41,7 +41,7 @@ def cargar_config_cliente(slug_cliente):
                 "color_primario": row.get("color_primario") or "#7c3aed"
             }
         
-        # Si es el cliente por defecto y no existe en la tabla clientes
+        # Fallback para el cliente por defecto
         if slug_cliente == "electro_plus":
             return {
                 "encontrado": True,
@@ -54,6 +54,15 @@ def cargar_config_cliente(slug_cliente):
         return {"encontrado": False}
     except Exception:
         return {"encontrado": False}
+
+@st.cache_data(ttl=30)
+def obtener_clientes_activos():
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        response = supabase.table("clientes").select("client_id, nombre_comercio").eq("activo", True).execute()
+        return response.data if response.data else []
+    except Exception:
+        return []
 
 @st.cache_data(ttl=10)
 def cargar_productos_cliente(slug_cliente):
@@ -93,23 +102,37 @@ def cargar_productos_cliente(slug_cliente):
 
 config_cliente = cargar_config_cliente(CLIENTE_SOLICITADO)
 
-# PANTALLA FALLBACK DE COMERCIO NO ENCONTRADO
+# PANTALLA FALLBACK AJUSTADA
 if not config_cliente.get("encontrado"):
     st.markdown("""
-        <div style="text-align: center; padding: 50px 20px;">
-            <h1 style="font-size: 48px; color: #374151;">🏪🛍️</h1>
-            <h2 style="color: #111827; font-size: 28px; font-weight: 800;">Comercio no encontrado</h2>
-            <p style="color: #6b7280; font-size: 16px; max-width: 500px; margin: 10px auto 30px auto;">
-                El catálogo que estás intentando consultar no existe o fue desactivado temporalmente.
+        <div style="text-align: center; padding: 40px 20px 20px 20px;">
+            <h1 style="font-size: 52px; margin-bottom: 10px;">🏪🛍️</h1>
+            <h2 style="color: #111827; font-size: 28px; font-weight: 800; margin-bottom: 16px;">Comercio no encontrado</h2>
+            <p style="color: #4b5563; font-size: 16px; max-width: 600px; margin: 0 auto 24px auto; line-height: 1.6;">
+                El catálogo que estás intentando consultar no existe o fue desactivado temporalmente. Podés acceder a los siguientes catálogos vigentes o comunicarte con la tienda que proporcionó el enlace.
             </p>
         </div>
     """, unsafe_allow_html=True)
+    
+    clientes_disponibles = obtener_clientes_activos()
+    
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         if st.button("🛍️ Ir al catálogo principal (ELECTRO+)", use_container_width=True):
             st.query_params.clear()
             st.query_params["cliente"] = "electro_plus"
             st.rerun()
+            
+        if clientes_disponibles:
+            st.markdown("<h4 style='text-align: center; margin-top: 24px; color: #374151;'>Otros catálogos vigentes:</h4>", unsafe_allow_html=True)
+            for cli in clientes_disponibles:
+                nombre_c = cli.get("nombre_comercio", cli.get("client_id"))
+                slug_c = cli.get("client_id")
+                if st.button(f"🏪 {nombre_c}", key=f"btn_err_{slug_c}", use_container_width=True):
+                    st.query_params.clear()
+                    st.query_params["cliente"] = slug_c
+                    st.rerun()
+                    
     st.stop()
 
 COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
