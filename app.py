@@ -43,7 +43,10 @@ def cargar_config_cliente(slug_cliente):
                 "color_fondo": row.get("color_fondo") or "#f4f5f7",
                 "color_botones": row.get("color_botones") or row.get("color_primario") or "#7c3aed",
                 "color_texto": row.get("color_texto") or "#111827",
-                "logo_url": row.get("logo_url") or ""
+                "logo_url": row.get("logo_url") or "",
+                "beneficio_1": row.get("beneficio_1") or "RETIRÁ GRATIS EN SUCURSAL",
+                "beneficio_2": row.get("beneficio_2") or "VENTA POR WHATSAPP",
+                "beneficio_3": row.get("beneficio_3") or "ENVÍOS A TODO EL PAÍS"
             }
         return {"encontrado": False}
     except Exception:
@@ -122,6 +125,9 @@ COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7")
 COLOR_BOTONES = config_cliente.get("color_botones", "#7c3aed")
 COLOR_TEXTO = config_cliente.get("color_texto", "#111827")
 LOGO_URL_MARCA = config_cliente.get("logo_url", "")
+BENEFICIO_1 = html.escape(config_cliente.get("beneficio_1", ""))
+BENEFICIO_2 = html.escape(config_cliente.get("beneficio_2", ""))
+BENEFICIO_3 = html.escape(config_cliente.get("beneficio_3", ""))
 
 # INYECCIÓN DINÁMICA DE ESTILOS CSS MULTI-TENANT
 st.markdown(f"""
@@ -143,7 +149,6 @@ st.markdown(f"""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }}
 
-    /* Textos generales adaptados dinámicamente al color configurado por el comercio */
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp p, .stApp label, .stApp .stMarkdown {{
         color: {COLOR_TEXTO} !important;
     }}
@@ -224,7 +229,6 @@ st.markdown(f"""
         gap: 4px;
     }}
 
-    /* Estilización dinámica de los botones de Streamlit usando el color configurado */
     div.stButton > button {{
         background-color: {COLOR_BOTONES} !important;
         color: {COLOR_TEXTO} !important;
@@ -237,7 +241,6 @@ st.markdown(f"""
         opacity: 0.9 !important;
     }}
 
-    /* Reset estricto para las tarjetas de productos (que se mantienen limpias y blancas) */
     div[data-testid="stVerticalBlockBorderWrapper"] p,
     div[data-testid="stVerticalBlockBorderWrapper"] div,
     div[data-testid="stVerticalBlockBorderWrapper"] span {{
@@ -440,19 +443,20 @@ with col_cart:
 
 st.markdown("")
 
-st.markdown("""
+# RENDERIZADO DINÁMICO DE LA BARRA DE BENEFICIOS SEGÚN EL CLIENTE
+st.markdown(f"""
 <div class="benefits-bar">
     <div class="benefit-item">
         <span style="font-size: 20px;">🏪</span>
-        <span>RETIRÁ GRATIS EN SUCURSAL</span>
+        <span>{BENEFICIO_1}</span>
     </div>
     <div class="benefit-item">
         <span style="font-size: 20px;">🎧</span>
-        <span>VENTA POR WHATSAPP</span>
+        <span>{BENEFICIO_2}</span>
     </div>
     <div class="benefit-item">
         <span style="font-size: 20px;">📦</span>
-        <span>ENVÍOS A TODO EL PAÍS</span>
+        <span>{BENEFICIO_3}</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
