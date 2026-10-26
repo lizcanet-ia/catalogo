@@ -40,7 +40,8 @@ def cargar_config_cliente(slug_cliente):
                 "nombre_comercio": row.get("nombre_comercio") or slug_cliente.replace("_", " ").upper(),
                 "whatsapp_numero": row.get("whatsapp_numero") or "5491165295937",
                 "color_primario": row.get("color_primario") or "#7c3aed",
-                "color_fondo": row.get("color_fondo") or "#f4f5f7"
+                "color_fondo": row.get("color_fondo") or "#f4f5f7",
+                "logo_url": row.get("logo_url") or ""
             }
         return {"encontrado": False}
     except Exception:
@@ -85,7 +86,7 @@ def cargar_productos_cliente(slug_cliente):
         st.error(f"Error al conectar con Supabase: {e}")
         return []
 
-# SI NO HAY CLIENTE EN LA URL, MUESTRA UNA PANTALLA INSTITUCIONAL LIMPIA
+# PANTALLA SI NO HAY CLIENTE EN LA URL
 if not CLIENTE_SOLICITADO:
     st.markdown("""
         <div style="text-align: center; padding: 80px 20px 20px 20px;">
@@ -116,19 +117,9 @@ COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = html.escape(config_cliente.get("nombre_comercio", "CATÁLOGO"))
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
 COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7")
+LOGO_URL_MARCA = config_cliente.get("logo_url", "")
 
-def formatear_logo_html(nombre):
-    if "+" in nombre:
-        partes = nombre.rsplit("+", 1)
-        return f'{partes[0]}<span>+</span>{partes[1]}'
-    elif "&" in nombre:
-        partes = nombre.rsplit("&", 1)
-        return f'{partes[0]}<span>&</span>{partes[1]}'
-    else:
-        return nombre
-
-LOGO_HTML = formatear_logo_html(NOMBRE_MARCA)
-
+# INYECCIÓN DINÁMICA DE ESTILOS CSS CON ALTO CONSTRASTE Y TEXTO ADAPTATIVO
 st.markdown(f"""
     <style>
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
@@ -137,15 +128,21 @@ st.markdown(f"""
 
     .block-container {{
         max-width: 95% !important;
-        padding-top: 2rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 3rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
         background-color: transparent !important;
     }}
 
+    /* Estilo tipográfico global para el cuerpo del catálogo */
     html, body, [class*="css"] {{
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }}
+
+    /* Textos del catálogo con color contrastado suave (Crema/Blanco cálido) */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp p, .stApp label, .stApp .stMarkdown {{
+        color: #f5efe6 !important;
     }}
     
     html {{
@@ -157,64 +154,83 @@ st.markdown(f"""
         height: 6px;
         width: 100%;
         margin-top: 6px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
         border-radius: 3px;
     }}
     
-    .brand-logo {{
-        font-size: 42px;
-        font-weight: 900;
-        color: #111827;
-        letter-spacing: -0.5px;
-        line-height: 1.1;
+    .brand-header-box {{
+        display: flex;
+        align-items: center;
+        gap: 16px;
     }}
-    
-    .brand-logo span {{
-        color: {COLOR_MARCA};
+
+    .brand-logo-img {{
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        border: 2px solid {COLOR_MARCA};
+    }}
+
+    .brand-logo-text {{
+        font-size: 38px;
+        font-weight: 900;
+        color: #f5efe6 !important;
+        letter-spacing: 0.5px;
+        line-height: 1.1;
     }}
     
     .cart-link-badge {{
         display: block;
         text-align: right;
         background-color: #ffffff;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 16px; 
-        color: #374151;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 15px; 
+        color: #111827 !important;
         text-decoration: none;
         border: 1px solid #e5e7eb;
-        transition: background-color 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        transition: transform 0.2s ease;
     }}
     .cart-link-badge:hover {{
-        background-color: #f3f4f6;
-        color: #111827;
+        transform: scale(1.02);
     }}
     
     .benefits-bar {{
         display: flex;
         justify-content: space-around;
-        background-color: white;
+        background-color: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 10px;
         padding: 14px 10px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }}
     
     .benefit-item {{
         font-size: 12px;
-        font-weight: 700;
-        color: #374151;
+        font-weight: 800;
+        color: #111827 !important;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
     }}
+
+    /* Reset de textos oscuros dentro de las tarjetas de productos (que son blancas) */
+    div[data-testid="stVerticalBlockBorderWrapper"] p,
+    div[data-testid="stVerticalBlockBorderWrapper"] div,
+    div[data-testid="stVerticalBlockBorderWrapper"] span {{
+        color: #111827;
+    }}
     
     .badge-last {{
         background-color: #fee2e2;
-        color: #b91c1c;
+        color: #b91c1c !important;
         font-weight: 700;
         font-size: 12px;
         padding: 5px 12px;
@@ -224,7 +240,7 @@ st.markdown(f"""
     
     .badge-few {{
         background-color: #fef3c7;
-        color: #92400e;
+        color: #92400e !important;
         font-weight: 700;
         font-size: 12px;
         padding: 5px 12px;
@@ -234,7 +250,7 @@ st.markdown(f"""
     
     .badge-ok {{
         background-color: #d1fae5;
-        color: #065f46;
+        color: #065f46 !important;
         font-weight: 700;
         font-size: 12px;
         padding: 5px 12px;
@@ -244,7 +260,7 @@ st.markdown(f"""
     
     .badge-out {{
         background-color: #f3f4f6;
-        color: #4b5563;
+        color: #4b5563 !important;
         font-weight: 700;
         font-size: 12px;
         padding: 5px 12px;
@@ -254,7 +270,7 @@ st.markdown(f"""
 
     .badge-discount {{
         background-color: #ef4444;
-        color: #ffffff;
+        color: #ffffff !important;
         font-weight: 800;
         font-size: 13px;
         padding: 4px 10px;
@@ -266,7 +282,7 @@ st.markdown(f"""
 
     .old-price {{
         font-size: 18px;
-        color: #9ca3af;
+        color: #9ca3af !important;
         text-decoration: line-through;
         font-weight: 600;
         margin-right: 8px;
@@ -274,8 +290,8 @@ st.markdown(f"""
     
     .product-title {{
         font-size: 18px;
-        font-weight: 700;
-        color: #111827;
+        font-weight: 800;
+        color: #111827 !important;
         margin-bottom: 10px;
         line-height: 1.4;
         display: -webkit-box;
@@ -288,7 +304,7 @@ st.markdown(f"""
     .product-brand {{
         font-size: 13px;
         font-weight: 800;
-        color: {COLOR_MARCA};
+        color: #854d0e !important;
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 6px;
@@ -297,7 +313,7 @@ st.markdown(f"""
     .product-price {{
         font-size: 24px;
         font-weight: 900;
-        color: #111827;
+        color: #111827 !important;
         margin: 6px 0 12px 0;
         display: flex;
         align-items: center;
@@ -321,7 +337,7 @@ st.markdown(f"""
     .promo-transfer {{
         background-color: #ecfdf5;
         border: 1px solid #a7f3d0;
-        color: #065f46;
+        color: #065f46 !important;
         padding: 10px;
         border-radius: 6px;
         font-size: 13px;
@@ -331,7 +347,7 @@ st.markdown(f"""
 
     .promo-item {{
         font-size: 14px;
-        color: #374151;
+        color: #374151 !important;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -350,7 +366,7 @@ st.markdown(f"""
     }}
 
     .added-badge {{
-        color: #047857;
+        color: #047857 !important;
         font-size: 13px;
         font-weight: 700;
     }}
@@ -391,7 +407,19 @@ for item in st.session_state.carrito.values():
 
 col_logo, col_cart = st.columns([2.6, 1.4])
 with col_logo:
-    st.markdown(f'<div class="brand-logo">{LOGO_HTML}</div>', unsafe_allow_html=True)
+    # SI EL CLIENTE TIENE LOGO_URL CARGADO, MOSTRAR IMAGEN + NOMBRE
+    if LOGO_URL_MARCA:
+        header_html = f'''
+            <div class="brand-header-box">
+                <img src="{LOGO_URL_MARCA}" class="brand-logo-img" alt="Logo">
+                <div class="brand-logo-text">{NOMBRE_MARCA}</div>
+            </div>
+        '''
+    else:
+        header_html = f'<div class="brand-logo-text">{NOMBRE_MARCA}</div>'
+        
+    st.markdown(header_html, unsafe_allow_html=True)
+
 with col_cart:
     st.markdown(f'<a href="#carrito-abajo" class="cart-link-badge">🛒 {total_items} items</a>', unsafe_allow_html=True)
 
@@ -417,7 +445,7 @@ st.markdown("""
 if not productos:
     st.warning(f"No hay productos cargados o activos para este comercio.")
 else:
-    st.markdown("### 📂 Categorías")
+    st.markdown("### Categorías")
     
     categorias_unicas = ["Todas"] + sorted(list(set(p.get("categoria", "General") for p in productos if p.get("categoria"))))
     
@@ -651,7 +679,7 @@ else:
                 with c_info:
                     safe_item_prod = html.escape(item['producto'])
                     safe_item_marca = html.escape(item['marca'])
-                    item_html = f"**{safe_item_prod}**<br><span style='font-size:13px; color:{COLOR_MARCA}; font-weight:600;'>{safe_item_marca}</span><br><span style='font-size:14px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
+                    item_html = f"**{safe_item_prod}**<br><span style='font-size:13px; color:#854d0e; font-weight:600;'>{safe_item_marca}</span><br><span style='font-size:14px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
                     st.markdown(item_html, unsafe_allow_html=True)
                 with c_qty:
                     nueva_cantidad = st.number_input(
@@ -695,7 +723,7 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS EN PIE DE PÁGINA
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### 📂 Categorías (Explorar más)")
+    st.markdown("### Explorar más")
     
     cat_cols_bottom = st.columns(min(len(categorias_unicas), 6))
     for idx_cat, cat_nombre in enumerate(categorias_unicas):
