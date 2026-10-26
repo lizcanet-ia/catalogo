@@ -3,9 +3,10 @@ from supabase import create_client
 import urllib.parse
 import textwrap
 import html
+import re
 
 st.set_page_config(
-    page_title="Catálogo Digital",
+    page_title="Lizia - Catálogos Digitales con Google Sheets",
     page_icon="🛒",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -18,7 +19,7 @@ URL_BASE_APP = "https://catalogo-lizia.streamlit.app"
 
 # --- DETECCIÓN MULTI-CLIENTE POR URL ---
 query_params = st.query_params
-CLIENTE_SOLICITADO = query_params.get("cliente", "electro_plus").strip().lower()
+CLIENTE_SOLICITADO = query_params.get("cliente", "").strip().lower()
 prod_en_url = query_params.get("prod", "")
 
 @st.cache_data(ttl=15)
@@ -94,6 +95,85 @@ def cargar_productos_cliente(slug_cliente):
         st.error(f"Error al conectar con Supabase: {e}")
         return []
 
+
+# =========================================================================
+# VISTA 1: LANDING PAGE DE ONBOARDING (SI NO HAY CLIENTE EN LA URL)
+# =========================================================================
+if not CLIENTE_SOLICITADO:
+    st.markdown("""
+        <div style="text-align: center; padding: 40px 20px 10px 20px;">
+            <h1 style="font-size: 48px; font-weight: 900; color: #111827; margin-bottom: 10px;">LIZIA 🚀</h1>
+            <h3 style="color: #4b5563; font-weight: 600; margin-bottom: 24px;">Tu Catálogo Digital E-commerce sincronizado con Google Sheets</h3>
+            <p style="color: #6b7280; font-size: 16px; max-width: 650px; margin: 0 auto 30px auto; line-height: 1.6;">
+                Cargá y actualizá tus productos, precios y stock directamente desde una planilla de Google Sheets. Sin complicaciones técnicas, con carrito de compras directo por WhatsApp y diseño profesional para tu marca.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([1, 2, 1])
+    with c2:
+        with st.form(key="form_onboarding"):
+            st.markdown("### 🛠️ Registrá tu Negocio en Segundos")
+            nombre_negocio = st.text_input("Nombre de tu Comercio", placeholder="Ej: Mi Tienda Online")
+            slug_ingresado = st.text_input("Identificador único (sin espacios ni mayúsculas)", placeholder="Ej: mi_tienda")
+            whatsapp_ingresado = st.text_input("Número de WhatsApp para pedidos", placeholder="Ej: 5491112345678")
+            
+            col_p1, col_p2 = st.columns(2)
+            with col_p1:
+                color_marca = st.color_picker("Color Principal", "#7c3aed")
+            with col_p2:
+                color_fondo = st.color_picker("Color de Fondo", "#f4f5f7")
+
+            crear_comercio = st.form_submit_button("✨ Crear mi Catálogo Ahora", use_container_width=True)
+            
+            if crear_comercio:
+                if not nombre_negocio.strip() or not slug_ingresado.strip() or not whatsapp_ingresado.strip():
+                    st.warning("⚠️ Por favor completa todos los campos obligatorios.")
+                else:
+                    # Limpiar slug (slugify básico)
+                    slug_limpio = re.sub(r'[^a-z0-9_]', '', slug_ingresado.lower().replace(" ", "_"))
+                    
+                    try:
+                        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+                        
+                        # Verificar si ya existe
+                        existe = supabase.table("clientes").select("client_id").eq("client_id", slug_limpio).execute()
+                        if existe.data and len(existe.data) > 0:
+                            st.error(f"❌ El identificador '{slug_limpio}' ya está en uso. Elegí otro.")
+                        else:
+                            # Insertar nuevo cliente
+                            supabase.table("clientes").insert({
+                                "client_id": slug_limpio,
+                                "nombre_comercio": nombre_negocio.strip(),
+                                "whatsapp_numero": whatsapp_ingresado.strip(),
+                                "color_primario": color_marca,
+                                "color_fondo": color_fondo,
+                                "activo": True
+                            }).execute()
+                            
+                            st.success("¡Comercio registrado con éxito! Redirigiendo a tu catálogo...")
+                            st.query_params["cliente"] = slug_limpio
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Error al registrar en la base de datos: {e}")
+
+        # Mostrar catálogos activos ya existentes
+        clientes_activos = obtener_clientes_activos()
+        if clientes_activos:
+            st.markdown("<h4 style='text-align: center; margin-top: 40px; color: #374151;'>O explorá catálogos vigentes:</h4>", unsafe_allow_html=True)
+            for cli in clientes_activos:
+                nombre_c = cli.get("nombre_comercio", cli.get("client_id"))
+                slug_c = cli.get("client_id")
+                if st.button(f"🏪 {nombre_c}", key=f"btn_landing_{slug_c}", use_container_width=True):
+                    st.query_params["cliente"] = slug_c
+                    st.rerun()
+
+    st.stop()
+
+
+# =========================================================================
+# VISTA 2: CATÁLOGO DIGITAL MULTI-TENANT (CUANDO HAY CLIENTE EN LA URL)
+# =========================================================================
 config_cliente = cargar_config_cliente(CLIENTE_SOLICITADO)
 
 if not config_cliente.get("encontrado"):
@@ -102,25 +182,16 @@ if not config_cliente.get("encontrado"):
             <h1 style="font-size: 52px; margin-bottom: 10px;">🏪🛍️</h1>
             <h2 style="color: #111827; font-size: 28px; font-weight: 800; margin-bottom: 16px;">Comercio no encontrado</h2>
             <p style="color: #4b5563; font-size: 16px; max-width: 600px; margin: 0 auto 24px auto; line-height: 1.6;">
-                El catálogo que estás intentando consultar no existe o fue desactivado temporalmente. Podés acceder a los siguientes catálogos vigentes.
+                El catálogo que estás intentando consultar no existe o fue desactivado temporalmente.
             </p>
         </div>
     """, unsafe_allow_html=True)
     
-    clientes_disponibles = obtener_clientes_activos()
-    
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
-        if clientes_disponibles:
-            st.markdown("<h4 style='text-align: center; margin-top: 24px; color: #374151;'>Catálogos vigentes:</h4>", unsafe_allow_html=True)
-            for cli in clientes_disponibles:
-                nombre_c = cli.get("nombre_comercio", cli.get("client_id"))
-                slug_c = cli.get("client_id")
-                if st.button(f"🏪 {html.escape(nombre_c)}", key=f"btn_err_{slug_c}", use_container_width=True):
-                    st.query_params.clear()
-                    st.query_params["cliente"] = slug_c
-                    st.rerun()
-                    
+        if st.button("🏠 Volver al inicio de Lizia", use_container_width=True):
+            st.query_params.clear()
+            st.rerun()
     st.stop()
 
 COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
@@ -388,6 +459,13 @@ if "categoria_activa" not in st.session_state:
 st.markdown('<div class="top-bar"></div>', unsafe_allow_html=True)
 st.markdown('<div id="top-inicio"></div>', unsafe_allow_html=True)
 
+# Botón superior para volver al inicio del SaaS
+col_b_home, col_b_empty = st.columns([1, 5])
+with col_b_home:
+    if st.button("🌐 Crear mi propio catálogo"):
+        st.query_params.clear()
+        st.rerun()
+
 productos = cargar_productos_cliente(CLIENTE_SOLICITADO)
 
 total_items = sum(item["cantidad"] for item in st.session_state.carrito.values())
@@ -426,9 +504,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if not productos:
-    st.warning(f"No hay productos cargados o activos para el comercio.")
+    st.warning(f"No hay productos cargados o activos para este comercio todavía. Sincroniza tu Google Sheets para empezar.")
 else:
-    st.markdown("### 📂 Categorías")
+    st.markdown("### Categorías")
     
     categorias_unicas = ["Todas"] + sorted(list(set(p.get("categoria", "General") for p in productos if p.get("categoria"))))
     
@@ -696,7 +774,6 @@ else:
             
             wa_url = f"https://wa.me/{WHATSAPP_NUMERO}?text={urllib.parse.quote(mensaje_wa)}"
             
-            # TEXTO CORREGIDO DEL BOTÓN COMERCIAL
             st.markdown(f'<a href="{wa_url}" target="_blank" style="display:block; text-align:center; background-color:#059669; color:white; padding:14px; border-radius:8px; text-decoration:none; font-size:16px; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.15); margin-bottom: 10px;">📤 Enviar pedido por WhatsApp</a>', unsafe_allow_html=True)
             
             if st.button("🗑️ Vaciar carrito completo", use_container_width=True):
@@ -707,7 +784,7 @@ else:
     # 3. SECCIÓN DE CATEGORÍAS EN PIE DE PÁGINA
     # -------------------------------------------------------------
     st.markdown("---")
-    st.markdown("### 📂 Categorías (Explorar más)")
+    st.markdown("### Explorar más")
     
     cat_cols_bottom = st.columns(min(len(categorias_unicas), 6))
     for idx_cat, cat_nombre in enumerate(categorias_unicas):
