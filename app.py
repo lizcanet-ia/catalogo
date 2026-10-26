@@ -41,6 +41,8 @@ def cargar_config_cliente(slug_cliente):
                 "whatsapp_numero": row.get("whatsapp_numero") or "5491165295937",
                 "color_primario": row.get("color_primario") or "#7c3aed",
                 "color_fondo": row.get("color_fondo") or "#f4f5f7",
+                "color_botones": row.get("color_botones") or row.get("color_primario") or "#7c3aed",
+                "color_texto": row.get("color_texto") or "#111827",
                 "logo_url": row.get("logo_url") or ""
             }
         return {"encontrado": False}
@@ -106,7 +108,7 @@ if not config_cliente.get("encontrado"):
         <div style="text-align: center; padding: 60px 20px 20px 20px;">
             <h1 style="font-size: 52px; margin-bottom: 10px;">🏪❌</h1>
             <h2 style="color: #111827; font-size: 28px; font-weight: 800; margin-bottom: 16px;">Comercio no encontrado</h2>
-            <p style="color: #4b5563; font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            <p style="color: #4b5563; font-size: 16px; max-width: 600px; margin: 0 auto 24px auto; line-height: 1.6;">
                 El catálogo que estás intentando consultar no existe, no se encuentra activo o el enlace es incorrecto.
             </p>
         </div>
@@ -117,9 +119,11 @@ COLOR_MARCA = config_cliente.get("color_primario", "#7c3aed")
 NOMBRE_MARCA = html.escape(config_cliente.get("nombre_comercio", "CATÁLOGO"))
 WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
 COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7")
+COLOR_BOTONES = config_cliente.get("color_botones", "#7c3aed")
+COLOR_TEXTO = config_cliente.get("color_texto", "#111827")
 LOGO_URL_MARCA = config_cliente.get("logo_url", "")
 
-# INYECCIÓN DINÁMICA DE ESTILOS CSS CON ALTO CONSTRASTE Y TEXTO ADAPTATIVO
+# INYECCIÓN DINÁMICA DE ESTILOS CSS MULTI-TENANT
 st.markdown(f"""
     <style>
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
@@ -135,14 +139,13 @@ st.markdown(f"""
         background-color: transparent !important;
     }}
 
-    /* Estilo tipográfico global para el cuerpo del catálogo */
     html, body, [class*="css"] {{
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }}
 
-    /* Textos del catálogo con color contrastado suave (Crema/Blanco cálido) */
+    /* Textos generales adaptados dinámicamente al color configurado por el comercio */
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp p, .stApp label, .stApp .stMarkdown {{
-        color: #f5efe6 !important;
+        color: {COLOR_TEXTO} !important;
     }}
     
     html {{
@@ -176,7 +179,7 @@ st.markdown(f"""
     .brand-logo-text {{
         font-size: 38px;
         font-weight: 900;
-        color: #f5efe6 !important;
+        color: {COLOR_TEXTO} !important;
         letter-spacing: 0.5px;
         line-height: 1.1;
     }}
@@ -221,11 +224,24 @@ st.markdown(f"""
         gap: 4px;
     }}
 
-    /* Reset de textos oscuros dentro de las tarjetas de productos (que son blancas) */
+    /* Estilización dinámica de los botones de Streamlit usando el color configurado */
+    div.stButton > button {{
+        background-color: {COLOR_BOTONES} !important;
+        color: {COLOR_TEXTO} !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+    }}
+    div.stButton > button:hover {{
+        border-color: {COLOR_MARCA} !important;
+        opacity: 0.9 !important;
+    }}
+
+    /* Reset estricto para las tarjetas de productos (que se mantienen limpias y blancas) */
     div[data-testid="stVerticalBlockBorderWrapper"] p,
     div[data-testid="stVerticalBlockBorderWrapper"] div,
     div[data-testid="stVerticalBlockBorderWrapper"] span {{
-        color: #111827;
+        color: #111827 !important;
     }}
     
     .badge-last {{
@@ -407,7 +423,6 @@ for item in st.session_state.carrito.values():
 
 col_logo, col_cart = st.columns([2.6, 1.4])
 with col_logo:
-    # SI EL CLIENTE TIENE LOGO_URL CARGADO, MOSTRAR IMAGEN + NOMBRE
     if LOGO_URL_MARCA:
         header_html = f'''
             <div class="brand-header-box">
@@ -456,7 +471,7 @@ else:
             es_activa = (st.session_state.categoria_activa == cat_nombre)
             btn_label = f"✨ {cat_nombre}" if es_activa else cat_nombre
             
-            if st.button(btn_label, key=f"cat_top_{cat_nombre}", use_container_width=True, type="primary" if es_activa else "secondary"):
+            if st.button(btn_label, key=f"cat_top_{cat_nombre}", use_container_width=True):
                 st.session_state.categoria_activa = cat_nombre
                 st.session_state.input_busqueda = ""
                 st.session_state.select_marca = "TODAS"
@@ -731,7 +746,7 @@ else:
         with col_target:
             es_activa = (st.session_state.categoria_activa == cat_nombre)
             btn_label = f"✨ {cat_nombre}" if es_activa else cat_nombre
-            if st.button(btn_label, key=f"cat_bot_{cat_nombre}", use_container_width=True, type="primary" if es_activa else "secondary"):
+            if st.button(btn_label, key=f"cat_bot_{cat_nombre}", use_container_width=True):
                 st.session_state.categoria_activa = cat_nombre
                 st.session_state.input_busqueda = ""
                 st.session_state.select_marca = "TODAS"
