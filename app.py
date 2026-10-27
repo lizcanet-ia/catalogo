@@ -131,7 +131,7 @@ BENEFICIO_1 = html.escape(config_cliente.get("beneficio_1", ""))
 BENEFICIO_2 = html.escape(config_cliente.get("beneficio_2", ""))
 BENEFICIO_3 = html.escape(config_cliente.get("beneficio_3", ""))
 
-# INYECCIÓN DINÁMICA DE ESTILOS CSS MULTI-TENANT
+# INYECCIÓN DINÁMICA DE ESTILOS CSS MULTI-TENANT CON TIPOGRAFÍAS AMPLIADAS Y SUPERFICIES PERSONALIZADAS
 st.markdown(f"""
     <style>
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
@@ -191,7 +191,6 @@ st.markdown(f"""
         line-height: 1.1;
     }}
     
-    /* BOTÓN DEL CARRITO COMPACTO Y ALINEADO */
     .cart-link-container {{
         display: flex;
         justify-content: flex-end;
@@ -215,7 +214,6 @@ st.markdown(f"""
         transform: scale(1.02);
     }}
     
-    /* BARRA DE BENEFICIOS DINÁMICA CON COLOR DE SUPERFICIE CONFIGURABLE */
     .benefits-bar {{
         display: flex;
         justify-content: space-around;
@@ -229,7 +227,7 @@ st.markdown(f"""
     }}
     
     .benefit-item {{
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 800;
         color: #111827 !important;
         display: flex;
@@ -250,6 +248,13 @@ st.markdown(f"""
         opacity: 0.9 !important;
     }}
 
+    /* PERSONALIZACIÓN DE LAS TARJETAS DE PRODUCTOS CON EL COLOR DE SUPERFICIE */
+    div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: {COLOR_SUPERFICIE} !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+    }}
+
     div[data-testid="stVerticalBlockBorderWrapper"] p,
     div[data-testid="stVerticalBlockBorderWrapper"] div,
     div[data-testid="stVerticalBlockBorderWrapper"] span {{
@@ -260,8 +265,8 @@ st.markdown(f"""
         background-color: #fee2e2;
         color: #b91c1c !important;
         font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
+        font-size: 13px;
+        padding: 6px 12px;
         border-radius: 6px;
         display: inline-block;
     }}
@@ -270,8 +275,8 @@ st.markdown(f"""
         background-color: #fef3c7;
         color: #92400e !important;
         font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
+        font-size: 13px;
+        padding: 6px 12px;
         border-radius: 6px;
         display: inline-block;
     }}
@@ -280,8 +285,8 @@ st.markdown(f"""
         background-color: #d1fae5;
         color: #065f46 !important;
         font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
+        font-size: 13px;
+        padding: 6px 12px;
         border-radius: 6px;
         display: inline-block;
     }}
@@ -290,8 +295,8 @@ st.markdown(f"""
         background-color: #f3f4f6;
         color: #4b5563 !important;
         font-weight: 700;
-        font-size: 12px;
-        padding: 5px 12px;
+        font-size: 13px;
+        padding: 6px 12px;
         border-radius: 6px;
         display: inline-block;
     }}
@@ -300,7 +305,7 @@ st.markdown(f"""
         background-color: #ef4444;
         color: #ffffff !important;
         font-weight: 800;
-        font-size: 13px;
+        font-size: 14px;
         padding: 4px 10px;
         border-radius: 6px;
         display: inline-block;
@@ -309,29 +314,30 @@ st.markdown(f"""
     }}
 
     .old-price {{
-        font-size: 18px;
+        font-size: 20px;
         color: #9ca3af !important;
         text-decoration: line-through;
         font-weight: 600;
         margin-right: 8px;
     }}
     
+    /* TÍTULOS Y TEXTOS DE PRODUCTO MÁS GRANDES Y LEGIBLES */
     .product-title {{
-        font-size: 18px;
-        font-weight: 800;
+        font-size: 20px !important;
+        font-weight: 800 !important;
         color: #111827 !important;
-        margin-bottom: 10px;
-        line-height: 1.4;
+        margin-bottom: 12px !important;
+        line-height: 1.4 !important;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        min-height: 50px;
+        min-height: 56px;
     }}
     
     .product-brand {{
-        font-size: 13px;
-        font-weight: 800;
+        font-size: 14px !important;
+        font-weight: 800 !important;
         color: #854d0e !important;
         text-transform: uppercase;
         letter-spacing: 0.8px;
@@ -339,43 +345,44 @@ st.markdown(f"""
     }}
     
     .product-price {{
-        font-size: 24px;
-        font-weight: 900;
+        font-size: 26px !important;
+        font-weight: 900 !important;
         color: #111827 !important;
-        margin: 6px 0 12px 0;
+        margin: 8px 0 14px 0 !important;
         display: flex;
         align-items: center;
         flex-wrap: wrap;
         gap: 6px;
     }}
 
+    /* CAJA DE DESCRIPCIÓN ADAPTADA AL COLOR DE SUPERFICIE Y TEXTOS AMPLIADOS */
     .promo-box {{
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
+        background-color: {COLOR_SUPERFICIE} !important;
+        border: 1px solid #d1d5db !important;
         border-radius: 8px;
-        padding: 12px;
+        padding: 14px;
         margin-top: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 160px;
     }}
 
     .promo-transfer {{
         background-color: #ecfdf5;
         border: 1px solid #a7f3d0;
         color: #065f46 !important;
-        padding: 10px;
+        padding: 12px;
         border-radius: 6px;
-        font-size: 13px;
+        font-size: 15px !important;
         font-weight: 700;
         line-height: 1.4;
     }}
 
     .promo-item {{
-        font-size: 14px;
-        color: #374151 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #1f2937 !important;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -385,7 +392,7 @@ st.markdown(f"""
     .cart-status-box {{
         background-color: #f0fdf4;
         border: 1px solid #bbf7d0;
-        padding: 8px 12px;
+        padding: 10px 14px;
         border-radius: 8px;
         margin-bottom: 10px;
         display: flex;
@@ -395,7 +402,7 @@ st.markdown(f"""
 
     .added-badge {{
         color: #047857 !important;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
     }}
 
@@ -633,12 +640,12 @@ else:
 
                         if ficha_txt:
                             with st.expander("📋 Ver Ficha Técnica / Especificaciones"):
-                                st.markdown(f"<div style='font-size:13px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size:14px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
 
                         link_directo_producto = f"{URL_BASE_APP}/?cliente={CLIENTE_SOLICITADO}&prod={prod_id}"
                         wa_share_msg = f"¡Mirá este producto en {config_cliente.get('nombre_comercio')}: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
                         wa_share_url = f"https://wa.me/?text={urllib.parse.quote(wa_share_msg)}"
-                        st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:10px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:bold; margin-bottom:10px; margin-top:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
+                        st.markdown(f'<a href="{wa_share_url}" target="_blank" style="display:block; text-align:center; background-color:#25d366; color:white; padding:12px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold; margin-bottom:10px; margin-top:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">📲 Compartir por WhatsApp</a>', unsafe_allow_html=True)
 
                         if stock <= 0:
                             badge_html = '<span class="badge-out">Sin stock</span>'
@@ -710,7 +717,7 @@ else:
                 with c_info:
                     safe_item_prod = html.escape(item['producto'])
                     safe_item_marca = html.escape(item['marca'])
-                    item_html = f"**{safe_item_prod}**<br><span style='font-size:13px; color:#854d0e; font-weight:600;'>{safe_item_marca}</span><br><span style='font-size:14px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
+                    item_html = f"**{safe_item_prod}**<br><span style='font-size:14px; color:#854d0e; font-weight:600;'>{safe_item_marca}</span><br><span style='font-size:15px; font-weight:700;'>Subtotal: {subtotal_str}</span>"
                     st.markdown(item_html, unsafe_allow_html=True)
                 with c_qty:
                     nueva_cantidad = st.number_input(
