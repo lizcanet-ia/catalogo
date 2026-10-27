@@ -44,6 +44,7 @@ def cargar_config_cliente(slug_cliente):
                 "color_botones": row.get("color_botones") or row.get("color_primario") or "#7c3aed",
                 "color_texto": row.get("color_texto") or "#111827",
                 "color_superficie": row.get("color_superficie") or "#ffffff",
+                "color_texto_tarjeta": row.get("color_texto_tarjeta") or "#111827",
                 "logo_url": row.get("logo_url") or "",
                 "beneficio_1": row.get("beneficio_1") or "RETIRÁ GRATIS EN SUCURSAL",
                 "beneficio_2": row.get("beneficio_2") or "VENTA POR WHATSAPP",
@@ -126,12 +127,13 @@ COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7")
 COLOR_BOTONES = config_cliente.get("color_botones", "#7c3aed")
 COLOR_TEXTO = config_cliente.get("color_texto", "#111827")
 COLOR_SUPERFICIE = config_cliente.get("color_superficie", "#ffffff")
+COLOR_TEXTO_TARJETA = config_cliente.get("color_texto_tarjeta", "#111827")
 LOGO_URL_MARCA = config_cliente.get("logo_url", "")
 BENEFICIO_1 = html.escape(config_cliente.get("beneficio_1", ""))
 BENEFICIO_2 = html.escape(config_cliente.get("beneficio_2", ""))
 BENEFICIO_3 = html.escape(config_cliente.get("beneficio_3", ""))
 
-# INYECCIÓN DINÁMICA DE ESTILOS CSS MULTI-TENANT CON TIPOGRAFÍAS AMPLIADAS Y SUPERFICIES PERSONALIZADAS
+# INYECCIÓN DINÁMICA DE ESTILOS CSS MULTI-TENANT CON COLOR DE TEXTO DE TARJETA CONFIGURABLE
 st.markdown(f"""
     <style>
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
@@ -143,7 +145,7 @@ st.markdown(f"""
         padding-top: 1.5rem !important;
         padding-bottom: 3rem !important;
         padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding-right: 2.3rem !important;
         background-color: transparent !important;
     }}
 
@@ -248,7 +250,7 @@ st.markdown(f"""
         opacity: 0.9 !important;
     }}
 
-    /* PERSONALIZACIÓN DE LAS TARJETAS DE PRODUCTOS CON EL COLOR DE SUPERFICIE */
+    /* TARJETAS DE PRODUCTOS CON SUPERFICIE Y COLOR DE TEXTO CONFIGURABLE */
     div[data-testid="stVerticalBlockBorderWrapper"] {{
         background-color: {COLOR_SUPERFICIE} !important;
         border-radius: 12px !important;
@@ -258,7 +260,7 @@ st.markdown(f"""
     div[data-testid="stVerticalBlockBorderWrapper"] p,
     div[data-testid="stVerticalBlockBorderWrapper"] div,
     div[data-testid="stVerticalBlockBorderWrapper"] span {{
-        color: #111827 !important;
+        color: {COLOR_TEXTO_TARJETA} !important;
     }}
     
     .badge-last {{
@@ -321,11 +323,10 @@ st.markdown(f"""
         margin-right: 8px;
     }}
     
-    /* TÍTULOS Y TEXTOS DE PRODUCTO MÁS GRANDES Y LEGIBLES */
     .product-title {{
         font-size: 20px !important;
         font-weight: 800 !important;
-        color: #111827 !important;
+        color: {COLOR_TEXTO_TARJETA} !important;
         margin-bottom: 12px !important;
         line-height: 1.4 !important;
         display: -webkit-box;
@@ -347,7 +348,7 @@ st.markdown(f"""
     .product-price {{
         font-size: 26px !important;
         font-weight: 900 !important;
-        color: #111827 !important;
+        color: {COLOR_TEXTO_TARJETA} !important;
         margin: 8px 0 14px 0 !important;
         display: flex;
         align-items: center;
@@ -355,10 +356,9 @@ st.markdown(f"""
         gap: 6px;
     }}
 
-    /* CAJA DE DESCRIPCIÓN ADAPTADA AL COLOR DE SUPERFICIE Y TEXTOS AMPLIADOS */
     .promo-box {{
         background-color: {COLOR_SUPERFICIE} !important;
-        border: 1px solid #d1d5db !important;
+        border: 1px solid rgba(0,0,0,0.15) !important;
         border-radius: 8px;
         padding: 14px;
         margin-top: 10px;
@@ -382,7 +382,7 @@ st.markdown(f"""
     .promo-item {{
         font-size: 15px !important;
         font-weight: 600 !important;
-        color: #1f2937 !important;
+        color: {COLOR_TEXTO_TARJETA} !important;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -640,7 +640,7 @@ else:
 
                         if ficha_txt:
                             with st.expander("📋 Ver Ficha Técnica / Especificaciones"):
-                                st.markdown(f"<div style='font-size:14px; color:#374151; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size:14px; color:{COLOR_TEXTO_TARJETA}; line-height:1.5;'>{ficha_txt}</div>", unsafe_allow_html=True)
 
                         link_directo_producto = f"{URL_BASE_APP}/?cliente={CLIENTE_SOLICITADO}&prod={prod_id}"
                         wa_share_msg = f"¡Mirá este producto en {config_cliente.get('nombre_comercio')}: {prod.get('producto')} ({prod.get('marca')}) a solo {precio_str}!\n👉 Ver producto: {link_directo_producto}"
