@@ -43,6 +43,7 @@ def cargar_config_cliente(slug_cliente):
                 "color_fondo": row.get("color_fondo") or "#f4f5f7",
                 "color_botones": row.get("color_botones") or row.get("color_primario") or "#7c3aed",
                 "color_texto": row.get("color_texto") or "#111827",
+                "color_superficie": row.get("color_superficie") or "#ffffff",
                 "logo_url": row.get("logo_url") or "",
                 "beneficio_1": row.get("beneficio_1") or "RETIRÁ GRATIS EN SUCURSAL",
                 "beneficio_2": row.get("beneficio_2") or "VENTA POR WHATSAPP",
@@ -124,6 +125,7 @@ WHATSAPP_NUMERO = config_cliente.get("whatsapp_numero", "5491165295937")
 COLOR_FONDO_MAIN = config_cliente.get("color_fondo", "#f4f5f7")
 COLOR_BOTONES = config_cliente.get("color_botones", "#7c3aed")
 COLOR_TEXTO = config_cliente.get("color_texto", "#111827")
+COLOR_SUPERFICIE = config_cliente.get("color_superficie", "#ffffff")
 LOGO_URL_MARCA = config_cliente.get("logo_url", "")
 BENEFICIO_1 = html.escape(config_cliente.get("beneficio_1", ""))
 BENEFICIO_2 = html.escape(config_cliente.get("beneficio_2", ""))
@@ -189,17 +191,23 @@ st.markdown(f"""
         line-height: 1.1;
     }}
     
+    /* BOTÓN DEL CARRITO COMPACTO Y ALINEADO */
+    .cart-link-container {{
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }}
+
     .cart-link-badge {{
-        display: block;
-        text-align: right;
-        background-color: #ffffff;
-        padding: 10px 16px;
+        display: inline-block;
+        background-color: {COLOR_SUPERFICIE};
+        padding: 10px 20px;
         border-radius: 10px;
         font-weight: 800;
         font-size: 15px; 
         color: #111827 !important;
         text-decoration: none;
-        border: 1px solid #e5e7eb;
+        border: 1px solid rgba(0,0,0,0.1);
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         transition: transform 0.2s ease;
     }}
@@ -207,11 +215,12 @@ st.markdown(f"""
         transform: scale(1.02);
     }}
     
+    /* BARRA DE BENEFICIOS DINÁMICA CON COLOR DE SUPERFICIE CONFIGURABLE */
     .benefits-bar {{
         display: flex;
         justify-content: space-around;
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
+        background-color: {COLOR_SUPERFICIE};
+        border: 1px solid rgba(0,0,0,0.1);
         border-radius: 10px;
         padding: 14px 10px;
         margin-bottom: 24px;
@@ -424,7 +433,7 @@ for item in st.session_state.carrito.values():
     if precio_ant and precio_ant > precio_actual:
         total_ahorro += (precio_ant - precio_actual) * item["cantidad"]
 
-col_logo, col_cart = st.columns([2.6, 1.4])
+col_logo, col_cart = st.columns([2.2, 1.8])
 with col_logo:
     if LOGO_URL_MARCA:
         header_html = f'''
@@ -439,11 +448,14 @@ with col_logo:
     st.markdown(header_html, unsafe_allow_html=True)
 
 with col_cart:
-    st.markdown(f'<a href="#carrito-abajo" class="cart-link-badge">🛒 {total_items} items</a>', unsafe_allow_html=True)
+    st.markdown(f'''
+        <div class="cart-link-container">
+            <a href="#carrito-abajo" class="cart-link-badge">🛒 {total_items} items</a>
+        </div>
+    ''', unsafe_allow_html=True)
 
 st.markdown("")
 
-# RENDERIZADO DINÁMICO DE LA BARRA DE BENEFICIOS SEGÚN EL CLIENTE
 st.markdown(f"""
 <div class="benefits-bar">
     <div class="benefit-item">
